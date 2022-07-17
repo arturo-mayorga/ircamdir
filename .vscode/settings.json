@@ -2,7 +2,8 @@
     "cSpell.words": [
         "Gamepad",
         "Gamepads",
-        "unconfigure"
+        "unconfigure",
+        "Vulkan"
     ],
     "files.associations": {
         "algorithm": "cpp",
