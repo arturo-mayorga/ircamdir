@@ -16,6 +16,10 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+find_package(Vulkan REQUIRED)
+
+
+
 add_executable(
   hello_test
   src/gpad.cpp
@@ -28,9 +32,15 @@ add_executable(
     llgame
     src/llgame-main.cpp
     src/gamepad-sys.cpp
+    src/window-sys.cpp
+    src/vulkan-loader.cpp
 )
 
-TARGET_LINK_LIBRARIES(llgame XInput )
+TARGET_LINK_LIBRARIES(llgame XInput Vulkan::Vulkan )
+
+# target_include_directories(llgame PUBLIC
+#     ${CMAKE_SOURCE_DIR}/../../VulkanSDK/1.3.216.0/Include/vulkan
+# )
 
 include(GoogleTest)
 gtest_discover_tests(hello_test)
