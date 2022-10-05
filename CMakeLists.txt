@@ -30,13 +30,16 @@ TARGET_LINK_LIBRARIES(hello_test ${LIBS} )
 
 add_executable(
     llgame
-    src/llgame-main.cpp
-    src/gamepad-sys.cpp
-    src/window-sys.cpp
-    src/vulkan-loader.cpp
+   # src/llgame-main.cpp
+   # src/readtest.cpp
+   src/ir2stdout.cpp
+    src/irsdk_client.cpp
+    src/irsdk_diskclient.cpp
+    src/irsdk_utils.cpp
+    src/yaml_parser.cpp
 )
 
-TARGET_LINK_LIBRARIES(llgame XInput Vulkan::Vulkan )
+TARGET_LINK_LIBRARIES(llgame)
 
 # target_include_directories(llgame PUBLIC
 #     ${CMAKE_SOURCE_DIR}/../../VulkanSDK/1.3.216.0/Include/vulkan
