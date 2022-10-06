@@ -16,8 +16,6 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-find_package(Vulkan REQUIRED)
-
 
 
 add_executable(
@@ -29,9 +27,19 @@ SET( LIBS XInput DSound gtest_main )
 TARGET_LINK_LIBRARIES(hello_test ${LIBS} )
 
 add_executable(
-    llgame
-   # src/llgame-main.cpp
-   # src/readtest.cpp
+    camdir
+    src/llgame-main.cpp
+    src/irsdk_client.cpp
+    src/irsdk_diskclient.cpp
+    src/irsdk_utils.cpp
+    src/yaml_parser.cpp
+    src/irtelemetry-sys.cpp
+)
+
+TARGET_LINK_LIBRARIES(camdir)
+
+add_executable(
+    ir2stdout
    src/ir2stdout.cpp
     src/irsdk_client.cpp
     src/irsdk_diskclient.cpp
@@ -39,11 +47,18 @@ add_executable(
     src/yaml_parser.cpp
 )
 
-TARGET_LINK_LIBRARIES(llgame)
+TARGET_LINK_LIBRARIES(ir2stdout)
 
-# target_include_directories(llgame PUBLIC
-#     ${CMAKE_SOURCE_DIR}/../../VulkanSDK/1.3.216.0/Include/vulkan
-# )
+add_executable(
+    irsendmsg
+   src/irsendmsg.cpp
+    src/irsdk_client.cpp
+    src/irsdk_diskclient.cpp
+    src/irsdk_utils.cpp
+    src/yaml_parser.cpp
+)
+
+TARGET_LINK_LIBRARIES(irsendmsg)
 
 include(GoogleTest)
 gtest_discover_tests(hello_test)

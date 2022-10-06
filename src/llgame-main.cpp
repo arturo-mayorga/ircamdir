@@ -1,9 +1,9 @@
 #include "ecs.h"
 #include <iostream>
-#include "gamepad-sys.h"
-#include "window-sys.h"
 
 #include <Windows.h>
+
+#include "irtelemetry-sys.h"
 
 class TestSystem : public ECS::EntitySystem
 {
@@ -30,11 +30,10 @@ int main()
     ECS::World *world = ECS::World::createWorld();
 
     ECS::EntitySystem *testSystem = world->registerSystem(new TestSystem());
-    ECS::EntitySystem *gamepadSystem = world->registerSystem(new GamepadSystem());
-    ECS::EntitySystem *windowSystem = world->registerSystem(new WindowSystem());
+    ECS::EntitySystem *gamepadSystem = world->registerSystem(new IrTelemetrySystem());
 
-    ECS::Entity *ent = world->create();
-    auto gamepadState = ent->assign<GamepadStateComponent>();
+    // ECS::Entity *ent = world->create();
+    // auto gamepadState = ent->assign<GamepadStateComponent>();
 
     std::cout << "Application Start" << std::endl
               << "==========================" << std::endl;
@@ -43,17 +42,6 @@ int main()
     {
 
         world->tick(10.f);
-
-        // std::cout << std::endl << std::endl << std::endl << std::endl << "main::tick:" << std::endl;
-        // std::cout << "    t " << gamepadState->throttle << std::endl;
-        // std::cout << "    y " << gamepadState->yaw << std::endl;
-        // std::cout << "    p " << gamepadState->pitch << std::endl;
-        // std::cout << "    r " << gamepadState->roll << std::endl;
-        // std::cout << "    a " << gamepadState->bA << std::endl;
-        // std::cout << "    b " << gamepadState->bB << std::endl;
-        // std::cout << "    x " << gamepadState->bX << std::endl;
-        // std::cout << "    y " << gamepadState->bY << std::endl;
-        // std::cout.flush();
         Sleep(10);
     }
 
