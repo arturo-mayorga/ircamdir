@@ -110,7 +110,16 @@ std::map<int, StaticCarStateComponentSP> getStaticCarStates(const char *yaml)
             StaticCarStateComponentSP cState(new StaticCarStateComponent());
             cState->name = valstr;
 
-            sprintf_s(str, 512, "DriverInfo:Drivers:CarIdx:{%d}CarIdx:", i);
+            std::cout << ":: " << valstr << " ";
+
+            if (i == 0)
+            {
+                sprintf_s(str, 512, "DriverInfo:Drivers:CarIdx:");
+            }
+            else
+            {
+                sprintf_s(str, 512, "DriverInfo:Drivers:CarIdx:{%d}CarIdx:", i - 1);
+            }
             if (parseYaml(yaml, str, &tVal, &tValLen))
             {
                 int len = tValLen;
@@ -121,6 +130,7 @@ std::map<int, StaticCarStateComponentSP> getStaticCarStates(const char *yaml)
                 memcpy(valstr, tVal, len);
                 valstr[len] = '\0'; // original string has no null termination...
                 cState->idx = atoi(valstr);
+                std::cout << valstr << "\n";
             }
 
             sprintf_s(str, 512, "DriverInfo:Drivers:CarIdx:{%d}UserID:", i);
@@ -216,24 +226,40 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                 }
                 else
                 {
-                    std::cout << "need car for " << pair.second->name << std::endl;
+                    std::cout << "need car for " << pair.second->name << " " << pair.second->idx << std::endl;
+
+                    ECS::Entity *ent = world->create();
+                    auto staticCarState = ent->assign<StaticCarStateComponentSP>(new StaticCarStateComponent());
+                    auto dynamicCarState = ent->assign<DynamicCarStateComponentSP>(new DynamicCarStateComponent());
+
+                    staticCarState.get()->idx = pair.second->idx;
+                    staticCarState.get()->name = pair.second->name;
+                    staticCarState.get()->uid = pair.second->uid;
+
+                    dynamicCarState.get()->idx = pair.second->idx;
                 }
             }
         }
 
-        // printf("%f, %f, %d, %d\n", g_carVelX.getDouble(), g_carVelX.getFloat(), g_carVelX.getInt(), g_carVelX.getBool());
+        // world->each<DynamicCarStateComponentSP>(
+        //     [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
+        //     {
+        //         DynamicCarStateComponentSP cState = cStateH.get();
 
-        // printf("%d\n", g_camCarIdx.getInt());
+        //         int i = cState->idx;
 
-        // int i = g_camCarIdx.getInt();
+        //         if (i >= 0)
+        //         {
+        //             std::cout << "getting dynamic info for " << i << std::endl;
 
-        // // for (int i = 0; i < g_CarIdxLapDistPct.getCount(); ++i)
-        // {
-        //     printf("%f ", g_CarIdxLapDistPct.getFloat(i));
-        //     printf("%f ", g_carIdxClassPosition.getFloat(i));
-        //     printf("%f ", g_carIdxF2Time.getFloat(i));
-        // }
-        // printf("\n");
+        //             cState->lapDistPct = g_CarIdxLapDistPct.getFloat(i);
+        //             cState->officialPos = (int)g_carIdxClassPosition.getFloat(i);
+        //         }
+        //         else
+        //         {
+        //             std::cout << "got a bad idx\n";
+        //         }
+        //     });
     }
 
     // your normal process loop would go here

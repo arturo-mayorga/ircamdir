@@ -29,9 +29,9 @@ struct DynamicCarStateComponent
 {
     ECS_DECLARE_TYPE;
 
-    DynamicCarStateComponent() : progress(-1), idx(-1), officialPos(0) {}
+    DynamicCarStateComponent() : lapDistPct(-1), idx(-1), officialPos(0) {}
 
-    float progress;
+    float lapDistPct;
     int idx;
     int officialPos;
 };
