@@ -1,12 +1,12 @@
-#ifndef irtelemetry_sys_h_
-#define irtelemetry_sys_h_
+#ifndef battle_detect_sys_h_
+#define battle_detect_sys_h_
 
 #include "ecs.h"
 
-class IrTelemetrySystem : public ECS::EntitySystem
+class BattleDetectSystem : public ECS::EntitySystem
 {
 public:
-    virtual ~IrTelemetrySystem();
+    virtual ~BattleDetectSystem();
 
     virtual void configure(class ECS::World *world) override;
 

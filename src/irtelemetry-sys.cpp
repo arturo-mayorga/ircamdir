@@ -1,4 +1,6 @@
 #include "irtelemetry-sys.h"
+#include "car-comp.h"
+#include "cam-ctrl-comp.h"
 #include <Windows.h>
 
 #include <iostream>
@@ -64,6 +66,7 @@ irsdkCVar g_camCarIdx("CamCarIdx");
 
 irsdkCVar g_CarIdxLapDistPct("CarIdxLapDistPct");
 irsdkCVar g_carIdxClassPosition("CarIdxClassPosition");
+irsdkCVar g_isCarInPits("CarIdxTrackSurface");
 irsdkCVar g_carIdxF2Time("CarIdxF2Time");
 
 void monitorConnectionStatus()
@@ -178,13 +181,10 @@ void IrTelemetrySystem::unconfigure(class ECS::World *world)
 void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
 {
     static int first = 1;
+    static int lastCam = -1;
+    static float tSinceCamChange = 0;
 
-    // char valstr[512];
-    // int valstrlen = 512;
-    // char str[512];
-
-    // const char *tVal = NULL;
-    // int tValLen = 0;
+    tSinceCamChange += deltaTime;
 
     // wait up to 16 ms for start of session or new data
     if (irsdkClient::instance().waitForData(16))
@@ -226,7 +226,7 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                 }
                 else
                 {
-                    std::cout << "need car for " << pair.second->name << " " << pair.second->idx << std::endl;
+                    std::cout << "creating car for " << pair.second->name << " " << pair.second->idx << std::endl;
 
                     ECS::Entity *ent = world->create();
                     auto staticCarState = ent->assign<StaticCarStateComponentSP>(new StaticCarStateComponent());
@@ -241,25 +241,42 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
             }
         }
 
-        // world->each<DynamicCarStateComponentSP>(
-        //     [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
-        //     {
-        //         DynamicCarStateComponentSP cState = cStateH.get();
+        world->each<DynamicCarStateComponentSP>(
+            [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
+            {
+                DynamicCarStateComponentSP cState = cStateH.get();
 
-        //         int i = cState->idx;
+                int i = cState->idx;
 
-        //         if (i >= 0)
-        //         {
-        //             std::cout << "getting dynamic info for " << i << std::endl;
+                if (i >= 0)
+                {
+                    // std::cout << "getting dynamic info for " << i << std::endl;
 
-        //             cState->lapDistPct = g_CarIdxLapDistPct.getFloat(i);
-        //             cState->officialPos = (int)g_carIdxClassPosition.getFloat(i);
-        //         }
-        //         else
-        //         {
-        //             std::cout << "got a bad idx\n";
-        //         }
-        //     });
+                    cState->lapDistPct = g_CarIdxLapDistPct.getFloat(i);
+                    cState->officialPos = (int)g_carIdxClassPosition.getFloat(i);
+                    cState->isInPits = ((int)g_isCarInPits.getFloat(i)) == irsdk_TrkLoc::irsdk_InPitStall;
+                }
+                else
+                {
+                    std::cout << "got a bad idx\n";
+                }
+            });
+    }
+
+    int camCarPos = 0;
+    world->each<CameraControlComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
+        {
+            CameraControlComponentSP cState = cStateH.get();
+            camCarPos = cState->targetCarPosRequested;
+        });
+
+    if (camCarPos != lastCam && tSinceCamChange > 10000)
+    {
+        std::cout << "requesting camera from iRacing: " << camCarPos << "     " << deltaTime << std::endl;
+        lastCam = camCarPos;
+        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, camCarPos, 15, 0);
+        tSinceCamChange = 0;
     }
 
     // your normal process loop would go here

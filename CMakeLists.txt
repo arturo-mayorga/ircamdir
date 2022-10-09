@@ -34,6 +34,7 @@ add_executable(
     src/irsdk_utils.cpp
     src/yaml_parser.cpp
     src/irtelemetry-sys.cpp
+    src/battle-detect-sys.cpp
 )
 
 TARGET_LINK_LIBRARIES(camdir)

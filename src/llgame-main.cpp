@@ -2,8 +2,15 @@
 #include <iostream>
 
 #include <Windows.h>
+#include <sysinfoapi.h>
 
 #include "irtelemetry-sys.h"
+#include "battle-detect-sys.h"
+
+#include "car-comp.h"
+#include "cam-ctrl-comp.h"
+
+#include <ctime>
 
 class TestSystem : public ECS::EntitySystem
 {
@@ -31,18 +38,22 @@ int main()
 
     ECS::EntitySystem *testSystem = world->registerSystem(new TestSystem());
     ECS::EntitySystem *gamepadSystem = world->registerSystem(new IrTelemetrySystem());
+    ECS::EntitySystem *battleDetectSystem = world->registerSystem(new BattleDetectSystem());
 
-    // ECS::Entity *ent = world->create();
-    // auto gamepadState = ent->assign<GamepadStateComponent>();
+    ECS::Entity *ent = world->create();
+    auto camCtrlCmp = ent->assign<CameraControlComponentSP>(new CameraControlComponent());
 
     std::cout << "Application Start" << std::endl
               << "==========================" << std::endl;
 
+    auto tPrev = GetTickCount();
+
     for (;;)
     {
-
-        world->tick(10.f);
+        auto t = GetTickCount();
+        world->tick((float)(t - tPrev));
         Sleep(10);
+        tPrev = t;
     }
 
     return 0;
