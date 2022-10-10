@@ -32,43 +32,11 @@
 // for timeBeginPeriod
 #pragma comment(lib, "Winmm")
 
-// bool, driver is in the car and physics are running
-// shut off motion if this is not true
-irsdkCVar g_playerInCar("IsOnTrack");
-
-// double, cars position in lat/lon decimal degrees
-irsdkCVar g_carLat("Lat");
-irsdkCVar g_carLon("Lon");
-// float, cars altitude in meters relative to sea levels
-irsdkCVar g_carAlt("Alt");
-
-// float, cars velocity in m/s
-irsdkCVar g_carVelX("VelocityX");
-irsdkCVar g_carVelY("VelocityY");
-irsdkCVar g_carVelZ("VelocityZ");
-
-// float, cars acceleration in m/s^2
-irsdkCVar g_carAccelX("LongAccel");
-irsdkCVar g_carAccelY("LatAccel");
-irsdkCVar g_carAccelZ("VertAccel");
-
-// float, cars orientation in rad
-irsdkCVar g_carYaw("YawNorth");
-irsdkCVar g_carPitch("Pitch");
-irsdkCVar g_carRoll("Roll");
-
-// float, cars change in orientation in rad/s
-irsdkCVar g_carYawRate("YawRate");
-irsdkCVar g_carPitchRate("PitchRate");
-irsdkCVar g_carRollRate("RollRate");
-
 irsdkCVar g_camCarIdx("CamCarIdx");
 
 irsdkCVar g_CarIdxLapDistPct("CarIdxLapDistPct");
 irsdkCVar g_carIdxClassPosition("CarIdxClassPosition");
 irsdkCVar g_isCarInPits("CarIdxTrackSurface");
-irsdkCVar g_carIdxF2Time("CarIdxF2Time");
-
 void monitorConnectionStatus()
 {
     // keep track of connection status
@@ -263,20 +231,29 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
             });
     }
 
+    int camCarPosReq = 0;
     int camCarPos = 0;
     world->each<CameraControlComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
         {
             CameraControlComponentSP cState = cStateH.get();
-            camCarPos = cState->targetCarPosRequested;
+            camCarPosReq = cState->targetCarPosRequested;
+            camCarPos = cState->targetCarPosActual = g_camCarIdx.getInt();
         });
 
-    if (camCarPos != lastCam && tSinceCamChange > 10000)
+    // std::cout << "timeSinceLastCamChange " << tSinceCamChange << std::endl;
+
+    if (camCarPos != lastCam)
     {
-        std::cout << "requesting camera from iRacing: " << camCarPos << "     " << deltaTime << std::endl;
-        lastCam = camCarPos;
-        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, camCarPos, 15, 0);
+        std::cout << "cam action detected, reseting timer" << std::endl;
         tSinceCamChange = 0;
+        lastCam = camCarPos;
+    }
+
+    if (camCarPosReq != lastCam && tSinceCamChange > 10000)
+    {
+        std::cout << "requesting camera from iRacing: " << camCarPosReq << std::endl;
+        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, camCarPosReq, 15, 0);
     }
 
     // your normal process loop would go here

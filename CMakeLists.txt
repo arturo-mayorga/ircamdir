@@ -35,6 +35,7 @@ add_executable(
     src/yaml_parser.cpp
     src/irtelemetry-sys.cpp
     src/battle-detect-sys.cpp
+    src/screen-time-stats-sys.cpp
 )
 
 TARGET_LINK_LIBRARIES(camdir)
