@@ -7,6 +7,7 @@
 #include "irtelemetry-sys.h"
 #include "battle-detect-sys.h"
 #include "screen-time-stats-sys.h"
+#include "tui-sys.h"
 
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
@@ -41,6 +42,7 @@ int main()
     ECS::EntitySystem *gamepadSystem = world->registerSystem(new IrTelemetrySystem());
     ECS::EntitySystem *battleDetectSystem = world->registerSystem(new BattleDetectSystem());
     ECS::EntitySystem *scrTimeSystem = world->registerSystem(new ScreenTimeStatsSys());
+    ECS::EntitySystem *tuiSys = world->registerSystem(new TuiSystem());
 
     ECS::Entity *ent = world->create();
     auto camCtrlCmp = ent->assign<CameraControlComponentSP>(new CameraControlComponent());

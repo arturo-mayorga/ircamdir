@@ -6,20 +6,6 @@
 #include <iomanip>
 #include <map>
 
-void recordTimeByPosition(int topN, std::map<int, float> &mapStore, float deltaTime, DynamicCarStateComponentSP &cState)
-{
-    int cIdx = cState->idx;
-    if (mapStore.count(cIdx) == 0)
-    {
-        mapStore[cIdx] = 0;
-    }
-
-    if (cState->officialPos <= topN)
-    {
-        mapStore[cIdx] += deltaTime;
-    }
-}
-
 ScreenTimeStatsSys::~ScreenTimeStatsSys()
 {
 }
@@ -35,12 +21,7 @@ void ScreenTimeStatsSys::unconfigure(class ECS::World *world)
 
 void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
 {
-    static std::map<int, float> scrTimeByCarIdx;
-    static std::map<int, float> leadTimeByCarIdx;
-    static std::map<int, float> top3TimeByCarIdx;
-    static std::map<int, float> top10TimeByCarIdx;
-    static std::map<int, float> top20TimeByCarIdx;
-
+    // figure out who has the current camera
     int currentCameraTarget = -1;
     world->each<CameraControlComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
@@ -49,6 +30,7 @@ void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
             currentCameraTarget = cState->targetCarPosActual;
         });
 
+    // update screen and standings time
     int currentCarIndex = -1;
     world->each<DynamicCarStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
@@ -57,40 +39,60 @@ void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
 
             int cIdx = cState->idx;
 
-            if (scrTimeByCarIdx.count(cIdx) == 0)
-            {
-                scrTimeByCarIdx[cIdx] = 0;
-            }
+            ECS::ComponentHandle<BroadcastCarInfoComponentSP> bStateH = ent->get<BroadcastCarInfoComponentSP>();
 
-            if (currentCameraTarget == cState->officialPos)
+            if (bStateH.isValid())
             {
-                float cTime = 0;
-                scrTimeByCarIdx[cIdx] += deltaTime;
-            }
+                BroadcastCarInfoComponentSP bState = bStateH.get();
 
-            recordTimeByPosition(1, leadTimeByCarIdx, deltaTime, cState);
-            recordTimeByPosition(3, top3TimeByCarIdx, deltaTime, cState);
-            recordTimeByPosition(10, top10TimeByCarIdx, deltaTime, cState);
-            recordTimeByPosition(20, top20TimeByCarIdx, deltaTime, cState);
+                if (currentCameraTarget == cState->officialPos)
+                {
+                    float cTime = 0;
+                    bState->scrTime += deltaTime;
+                }
+
+                if (cState->officialPos <= 1)
+                {
+                    bState->leadTime += deltaTime;
+                }
+                if (cState->officialPos <= 3)
+                {
+                    bState->top3Time += deltaTime;
+                }
+                if (cState->officialPos <= 5)
+                {
+                    bState->top5Time += deltaTime;
+                }
+                if (cState->officialPos <= 10)
+                {
+                    bState->top10Time += deltaTime;
+                }
+                if (cState->officialPos <= 20)
+                {
+                    bState->top20Time += deltaTime;
+                }
+            }
         });
 
-    static float timeSinceLastReport = 0;
-    timeSinceLastReport += deltaTime;
-
-    if (timeSinceLastReport > 20000)
-    {
-        timeSinceLastReport = 0;
-        float totalT = 0;
-
-        for (auto time : scrTimeByCarIdx)
+    // figure out the total screen time
+    float totalScrTime = 0;
+    world->each<BroadcastCarInfoComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<BroadcastCarInfoComponentSP> cStateH)
         {
-            totalT += time.second;
-        }
+            BroadcastCarInfoComponentSP cState = cStateH.get();
+            totalScrTime += cState->scrTime;
+        });
 
-        for (auto time : scrTimeByCarIdx)
+    // calculate the tv points
+    world->each<BroadcastCarInfoComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<BroadcastCarInfoComponentSP> cStateH)
         {
-            std::cout << "carIdx: " << time.first << "    cam time: " << std::fixed << std::setprecision(2) << 100 * time.second / totalT << "%"
-                      << "    t1 time: " << 100 * leadTimeByCarIdx[time.first] / totalT << "    t3 time: " << 100 * top3TimeByCarIdx[time.first] / totalT << "    t10 time: " << 100 * top10TimeByCarIdx[time.first] / totalT << "    t20 time: " << 100 * top20TimeByCarIdx[time.first] / totalT << std::endl;
-        }
-    }
+            BroadcastCarInfoComponentSP cState = cStateH.get();
+            cState->tvPoints = 1 + ((cState->top20Time + cState->top10Time + cState->top5Time + cState->top3Time + cState->leadTime) / totalScrTime);
+
+            if (cState->idx == 0) // the pace car doesn't get points
+            {
+                cState->tvPoints = 0;
+            }
+        });
 }

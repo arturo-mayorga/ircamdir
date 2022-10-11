@@ -81,7 +81,7 @@ std::map<int, StaticCarStateComponentSP> getStaticCarStates(const char *yaml)
             StaticCarStateComponentSP cState(new StaticCarStateComponent());
             cState->name = valstr;
 
-            std::cout << ":: " << valstr << " ";
+            // std::cout << ":: " << valstr << " ";
 
             if (i == 0)
             {
@@ -101,7 +101,7 @@ std::map<int, StaticCarStateComponentSP> getStaticCarStates(const char *yaml)
                 memcpy(valstr, tVal, len);
                 valstr[len] = '\0'; // original string has no null termination...
                 cState->idx = atoi(valstr);
-                std::cout << valstr << "\n";
+                // std::cout << valstr << "\n";
             }
 
             sprintf_s(str, 512, "DriverInfo:Drivers:CarIdx:{%d}UserID:", i);
@@ -136,9 +136,9 @@ IrTelemetrySystem::~IrTelemetrySystem()
 
 void IrTelemetrySystem::configure(class ECS::World *world)
 {
-    std::cout << "Starting iRacing Telemetry System: ";
+    // std::cout << "Starting iRacing Telemetry System: ";
 
-    std::cout << "OK" << std::endl;
+    // std::cout << "OK" << std::endl;
 }
 
 void IrTelemetrySystem::unconfigure(class ECS::World *world)
@@ -164,7 +164,7 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
 
             auto cStates = getStaticCarStates(irsdk_getSessionInfoStr());
 
-            std::cout << "there were " << cStates.size() << " cars" << std::endl;
+            // std::cout << "there were " << cStates.size() << " cars" << std::endl;
 
             std::set<int> existingCarIdxs;
 
@@ -190,21 +190,24 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
             {
                 if (existingCarIdxs.count(pair.first))
                 {
-                    std::cout << "found car for " << pair.second->name << std::endl;
+                    // std::cout << "found car for " << pair.second->name << std::endl;
                 }
                 else
                 {
-                    std::cout << "creating car for " << pair.second->name << " " << pair.second->idx << std::endl;
+                    // std::cout << "creating car for " << pair.second->name << " " << pair.second->idx << std::endl;
 
                     ECS::Entity *ent = world->create();
                     auto staticCarState = ent->assign<StaticCarStateComponentSP>(new StaticCarStateComponent());
                     auto dynamicCarState = ent->assign<DynamicCarStateComponentSP>(new DynamicCarStateComponent());
+                    auto broadcStCarState = ent->assign<BroadcastCarInfoComponentSP>(new BroadcastCarInfoComponent());
 
                     staticCarState.get()->idx = pair.second->idx;
                     staticCarState.get()->name = pair.second->name;
                     staticCarState.get()->uid = pair.second->uid;
 
                     dynamicCarState.get()->idx = pair.second->idx;
+
+                    broadcStCarState.get()->idx = pair.second->idx;
                 }
             }
         }
@@ -226,33 +229,48 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                 }
                 else
                 {
-                    std::cout << "got a bad idx\n";
+                    // std::cout << "got a bad idx\n";
                 }
             });
     }
 
     int camCarPosReq = 0;
     int camCarPos = 0;
+    int camCarIdx = g_camCarIdx.getInt();
+
+    world->each<DynamicCarStateComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
+        {
+            DynamicCarStateComponentSP cState = cStateH.get();
+
+            int i = cState->idx;
+
+            if (cState->idx == camCarIdx)
+            {
+                camCarPos = cState->officialPos;
+            }
+        });
+
     world->each<CameraControlComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
         {
             CameraControlComponentSP cState = cStateH.get();
             camCarPosReq = cState->targetCarPosRequested;
-            camCarPos = cState->targetCarPosActual = g_camCarIdx.getInt();
+            cState->targetCarPosActual = camCarPos;
         });
 
     // std::cout << "timeSinceLastCamChange " << tSinceCamChange << std::endl;
 
     if (camCarPos != lastCam)
     {
-        std::cout << "cam action detected, reseting timer" << std::endl;
+        // std::cout << "cam action detected, reseting timer, new cam: " << camCarPos << std::endl;
         tSinceCamChange = 0;
         lastCam = camCarPos;
     }
 
     if (camCarPosReq != lastCam && tSinceCamChange > 10000)
     {
-        std::cout << "requesting camera from iRacing: " << camCarPosReq << std::endl;
+        // std::cout << "requesting camera from iRacing: " << lastCam << " -> " << camCarPosReq << std::endl;
         irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, camCarPosReq, 15, 0);
     }
 
