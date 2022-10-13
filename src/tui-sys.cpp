@@ -66,7 +66,8 @@ void TuiSystem::_drawScreen(class ECS::World *world)
             CameraControlComponentSP cState = cStateH.get();
             currentCameraTarget = cState->targetCarPosActual;
         });
-    world->each<DynamicCarStateComponentSP>(
+
+       world->each<DynamicCarStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
         {
             DynamicCarStateComponentSP cState = cStateH.get();
@@ -112,13 +113,13 @@ void TuiSystem::_drawScreen(class ECS::World *world)
             StaticCarStateComponentSP cState = cStateH.get();
 
             ECS::ComponentHandle<BroadcastCarInfoComponentSP> bStateH = ent->get<BroadcastCarInfoComponentSP>();
-
             if (bStateH.isValid())
             {
                 std::stringstream sout;
                 int barSize = 0;
 
                 BroadcastCarInfoComponentSP bState = bStateH.get();
+
                 const int maxNameLen = 16;
                 auto dispName = cState->name.substr(0, maxNameLen);
                 sout << dispName;

@@ -152,9 +152,11 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
     static int first = 1;
     static int lastCam = -1;
     static float tSinceCamChange = 0;
+    static float tSinceIrData = 0;
     static int camGroup = 0;
 
     tSinceCamChange += deltaTime;
+    tSinceIrData += deltaTime;
 
     // wait up to 16 ms for start of session or new data
     if (irsdkClient::instance().waitForData(16))
@@ -226,16 +228,27 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                 if (i >= 0)
                 {
                     // std::cout << "getting dynamic info for " << i << std::endl;
-
+                    float oldLapPct = cState->lapDistPct;
                     cState->lapDistPct = g_CarIdxLapDistPct.getFloat(i);
                     cState->officialPos = (int)g_carIdxClassPosition.getFloat(i);
                     cState->isInPits = ((int)g_isCarInPits.getFloat(i)) == irsdk_TrkLoc::irsdk_InPitStall;
+
+                    float deltaLapDistPct = cState->lapDistPct - oldLapPct;
+                    if (deltaLapDistPct < 0)
+                    {
+                        deltaLapDistPct += 1;
+                    }
+
+                    deltaLapDistPct /= tSinceIrData;
+                    cState->deltaLapDistPct = deltaLapDistPct;
                 }
                 else
                 {
                     // std::cout << "got a bad idx\n";
                 }
             });
+
+        tSinceIrData = 0;
     }
 
     int camCarPosReq = 0;

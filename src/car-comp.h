@@ -32,6 +32,7 @@ struct DynamicCarStateComponent
     DynamicCarStateComponent() : lapDistPct(-1), idx(-1), officialPos(0), isInPits(0) {}
 
     float lapDistPct;
+    float deltaLapDistPct;
     int idx;
     int officialPos;
     int isInPits;

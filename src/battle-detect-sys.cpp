@@ -18,6 +18,8 @@ void BattleDetectSystem::unconfigure(class ECS::World *world)
     world->unsubscribeAll(this);
 }
 
+#define MIN_PCT_DELTA 0.5
+
 void BattleDetectSystem::tick(class ECS::World *world, float deltaTime)
 {
     std::vector<DynamicCarStateComponentSP> states;
@@ -28,9 +30,9 @@ void BattleDetectSystem::tick(class ECS::World *world, float deltaTime)
             DynamicCarStateComponentSP cState = cStateH.get();
             // std::cout << "pit info: " << cState->isInPits << std::endl;
 
-            if (cState->isInPits == 0)
+            if (cState->isInPits == 0 && cState->deltaLapDistPct * 100000 > MIN_PCT_DELTA)
             {
-                // ignore cars in pits
+                // ignore cars if they are in the pits or moving too slow
                 states.push_back(cState);
             }
         });
