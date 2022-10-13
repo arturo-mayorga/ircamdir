@@ -33,6 +33,7 @@
 #pragma comment(lib, "Winmm")
 
 irsdkCVar g_camCarIdx("CamCarIdx");
+irsdkCVar g_camGroup("CamGroupNumber");
 
 irsdkCVar g_CarIdxLapDistPct("CarIdxLapDistPct");
 irsdkCVar g_carIdxClassPosition("CarIdxClassPosition");
@@ -151,6 +152,7 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
     static int first = 1;
     static int lastCam = -1;
     static float tSinceCamChange = 0;
+    static int camGroup = 0;
 
     tSinceCamChange += deltaTime;
 
@@ -212,6 +214,8 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
             }
         }
 
+        camGroup = g_camGroup.getInt();
+
         world->each<DynamicCarStateComponentSP>(
             [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
             {
@@ -271,7 +275,7 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
     if (camCarPosReq != lastCam && tSinceCamChange > 10000)
     {
         // std::cout << "requesting camera from iRacing: " << lastCam << " -> " << camCarPosReq << std::endl;
-        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, camCarPosReq, 15, 0);
+        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, camCarPosReq, camGroup, 0);
     }
 
     // your normal process loop would go here
