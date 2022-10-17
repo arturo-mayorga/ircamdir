@@ -37,6 +37,7 @@ add_executable(
     src/battle-detect-sys.cpp
     src/screen-time-stats-sys.cpp 
     src/tui-sys.cpp
+    src/console-kb-sys.cpp
 )
 
 TARGET_LINK_LIBRARIES(camdir)

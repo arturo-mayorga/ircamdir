@@ -8,9 +8,11 @@
 #include "battle-detect-sys.h"
 #include "screen-time-stats-sys.h"
 #include "tui-sys.h"
+#include "console-kb-sys.h"
 
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
+#include "app-state-comp.h"
 
 #include <ctime>
 
@@ -43,9 +45,11 @@ int main()
     ECS::EntitySystem *battleDetectSystem = world->registerSystem(new BattleDetectSystem());
     ECS::EntitySystem *scrTimeSystem = world->registerSystem(new ScreenTimeStatsSys());
     ECS::EntitySystem *tuiSys = world->registerSystem(new TuiSystem());
+    ECS::EntitySystem *consoleKbSystem = world->registerSystem(new ConsoleKbSystem());
 
     ECS::Entity *ent = world->create();
     auto camCtrlCmp = ent->assign<CameraControlComponentSP>(new CameraControlComponent());
+    auto appStateCmp = ent->assign<ApplicationStateComponentSP>(new ApplicationStateComponent());
 
     std::cout << "Application Start" << std::endl
               << "==========================" << std::endl;

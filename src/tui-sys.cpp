@@ -1,6 +1,7 @@
 #include "tui-sys.h"
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
+#include "app-state-comp.h"
 
 #include <iostream>
 #include <sstream>
@@ -26,14 +27,25 @@ void TuiSystem::unconfigure(class ECS::World *world)
 void TuiSystem::tick(class ECS::World *world, float deltaTime)
 {
     static float timeSinceLastUpdate = REFRESH_DELTA + 1;
+    static AppMode lastAppMode = AppMode::PASSIVE;
+    AppMode currentAppMode = AppMode::PASSIVE;
+
+    world->each<ApplicationStateComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<ApplicationStateComponentSP> aStateH)
+        {
+            ApplicationStateComponentSP aState = aStateH.get();
+            currentAppMode = aState->mode;
+        });
 
     timeSinceLastUpdate += deltaTime;
 
-    if (timeSinceLastUpdate > REFRESH_DELTA)
+    if (timeSinceLastUpdate > REFRESH_DELTA || currentAppMode != lastAppMode)
     {
         this->_drawScreen(world);
         timeSinceLastUpdate = 0;
     }
+
+    lastAppMode = currentAppMode;
 }
 
 void drawPercentBar(float percent, float maxPercent, int strSize, std::stringstream &sout, char fillChar)
@@ -45,6 +57,28 @@ void drawPercentBar(float percent, float maxPercent, int strSize, std::stringstr
     }
     sout << "] ";
     sout << std::fixed << std::setprecision(2) << 100 * percent << "%";
+}
+
+void _drawAppStateControls(class ECS::World *world)
+{
+    AppMode currentMode = AppMode::PASSIVE;
+    world->each<ApplicationStateComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<ApplicationStateComponentSP> aStateH)
+        {
+            ApplicationStateComponentSP aState = aStateH.get();
+            currentMode = aState->mode;
+        });
+
+    if (currentMode != AppMode::PASSIVE)
+    {
+        std::cout << std::endl
+                  << "    [Hit Spacebar to enter passive mode]" << std::endl;
+    }
+    else
+    {
+        std::cout << std::endl
+                  << "    [Hit Spacebar to exit passive mode]" << std::endl;
+    }
 }
 
 void TuiSystem::_drawScreen(class ECS::World *world)
@@ -67,7 +101,7 @@ void TuiSystem::_drawScreen(class ECS::World *world)
             currentCameraTarget = cState->targetCarPosActual;
         });
 
-       world->each<DynamicCarStateComponentSP>(
+    world->each<DynamicCarStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
         {
             DynamicCarStateComponentSP cState = cStateH.get();
@@ -159,4 +193,6 @@ void TuiSystem::_drawScreen(class ECS::World *world)
     {
         std::cout << p.second;
     }
+
+    _drawAppStateControls(world);
 }

@@ -1,6 +1,7 @@
 #include "irtelemetry-sys.h"
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
+#include "app-state-comp.h"
 #include <Windows.h>
 
 #include <iostream>
@@ -285,7 +286,21 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
         lastCam = camCarPos;
     }
 
-    if (camCarPosReq != lastCam && tSinceCamChange > 10000)
+    static AppMode lastAppMode = AppMode::PASSIVE;
+    AppMode currentAppMode = AppMode::PASSIVE;
+
+    world->each<ApplicationStateComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<ApplicationStateComponentSP> aStateH)
+        {
+            ApplicationStateComponentSP aState = aStateH.get();
+            currentAppMode = aState->mode;
+        });
+
+    int appStateChanged = lastAppMode != currentAppMode;
+    lastAppMode = currentAppMode;
+
+    if (currentAppMode != AppMode::PASSIVE &&
+        (appStateChanged || camCarPosReq != lastCam && tSinceCamChange > 10000))
     {
         // std::cout << "requesting camera from iRacing: " << lastCam << " -> " << camCarPosReq << std::endl;
         irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, camCarPosReq, camGroup, 0);
