@@ -81,7 +81,8 @@ void BattleDetectSystem::tick(class ECS::World *world, float deltaTime)
             CameraControlComponentSP cState = cStateH.get();
             if (minIntervalPos > 0) // make sure we don't try to select the pace car
             {
-                cState->targetCarPosRequested = minIntervalPos;
+                // cState->targetCarPosRequested = minIntervalPos;
+                cState->closestBattleTarget = minIntervalPos;
             }
         });
 

@@ -10,6 +10,7 @@
 #include "tui-sys.h"
 #include "console-kb-sys.h"
 #include "broadcast-summary-sys.h"
+#include "tv-point-selector-sys.h"
 
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
@@ -48,6 +49,7 @@ int main()
     ECS::EntitySystem *tuiSys = world->registerSystem(new TuiSystem());
     ECS::EntitySystem *consoleKbSystem = world->registerSystem(new ConsoleKbSystem());
     ECS::EntitySystem *broadcastSummarySystem = world->registerSystem(new BroadcastSummarySystem());
+    ECS::EntitySystem *tvPointSelectorSystem = world->registerSystem(new TvPointSelectorSystem());
 
     ECS::Entity *ent = world->create();
     auto camCtrlCmp = ent->assign<CameraControlComponentSP>(new CameraControlComponent());
