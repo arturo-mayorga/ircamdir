@@ -111,32 +111,26 @@ void TuiSystem::_drawScreen(class ECS::World *world)
             }
         });
 
-    float totalTime = 0;
-    float maxScrTime = 0;
-    float totalTvPts = 0;
-    float maxTvPts = 0;
-
     std::vector<std::pair<float, std::string>> screenTimeStrs;
 
-    world->each<BroadcastCarInfoComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<BroadcastCarInfoComponentSP> bStateH)
-        {
-            BroadcastCarInfoComponentSP bState = bStateH.get();
-            totalTime += bState->scrTime;
-            totalTvPts += bState->tvPoints;
+    float maxScrPercent = 0;
+    float maxTvPtsPercent = 0;
 
-            if (maxScrTime < bState->scrTime)
+    world->each<BroadcastCarSummaryComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<BroadcastCarSummaryComponentSP> bStateH)
+        {
+            BroadcastCarSummaryComponentSP bState = bStateH.get();
+
+            if (maxScrPercent < bState->scrTimePct)
             {
-                maxScrTime = bState->scrTime;
+                maxScrPercent = bState->scrTimePct;
             }
 
-            if (maxTvPts < bState->tvPoints)
+            if (maxTvPtsPercent < bState->tvPtsPct)
             {
-                maxTvPts = bState->tvPoints;
+                maxTvPtsPercent = bState->tvPtsPct;
             }
         });
-    float maxScrPercent = maxScrTime / totalTime;
-    float maxTvPtsPercent = maxTvPts / totalTvPts;
     float maxPctAxis = (maxScrPercent > maxTvPtsPercent) ? maxScrPercent : maxTvPtsPercent;
 
     std::cout << "Name                Screen Time" << std::endl;
@@ -146,13 +140,13 @@ void TuiSystem::_drawScreen(class ECS::World *world)
         {
             StaticCarStateComponentSP cState = cStateH.get();
 
-            ECS::ComponentHandle<BroadcastCarInfoComponentSP> bStateH = ent->get<BroadcastCarInfoComponentSP>();
+            ECS::ComponentHandle<BroadcastCarSummaryComponentSP> bStateH = ent->get<BroadcastCarSummaryComponentSP>();
             if (bStateH.isValid())
             {
                 std::stringstream sout;
                 int barSize = 0;
 
-                BroadcastCarInfoComponentSP bState = bStateH.get();
+                BroadcastCarSummaryComponentSP bState = bStateH.get();
 
                 const int maxNameLen = 16;
                 auto dispName = cState->name.substr(0, maxNameLen);
@@ -165,7 +159,7 @@ void TuiSystem::_drawScreen(class ECS::World *world)
 
                 sout << ((bState->idx == currentCameraCarIdx) ? " ** target: " : "    target: ");
                 barSize = scrCols - maxNameLen - /*size of label "    actual: "*/ 17;
-                drawPercentBar(bState->tvPoints / totalTvPts, maxPctAxis, barSize, sout, 'X');
+                drawPercentBar(bState->tvPtsPct, maxPctAxis, barSize, sout, 'X');
 
                 sout << std::endl;
 
@@ -176,11 +170,11 @@ void TuiSystem::_drawScreen(class ECS::World *world)
 
                 sout << "    actual: ";
                 barSize = scrCols - maxNameLen - /*size of label "    actual: "*/ 17;
-                drawPercentBar(bState->scrTime / totalTime, maxPctAxis, barSize, sout, '-');
+                drawPercentBar(bState->scrTimePct, maxPctAxis, barSize, sout, '-');
 
                 sout << std::endl;
 
-                screenTimeStrs.push_back(std::pair<float, std::string>(bState->tvPoints, sout.str()));
+                screenTimeStrs.push_back(std::pair<float, std::string>(bState->tvPtsPct, sout.str()));
 
                 // std::cout << sout.str();
             }

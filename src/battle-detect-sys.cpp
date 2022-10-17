@@ -18,7 +18,7 @@ void BattleDetectSystem::unconfigure(class ECS::World *world)
     world->unsubscribeAll(this);
 }
 
-#define MIN_PCT_DELTA 0.5
+#define MIN_PCT_DELTA 0.005
 
 void BattleDetectSystem::tick(class ECS::World *world, float deltaTime)
 {

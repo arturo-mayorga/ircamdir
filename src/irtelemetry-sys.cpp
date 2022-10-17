@@ -204,15 +204,16 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                     ECS::Entity *ent = world->create();
                     auto staticCarState = ent->assign<StaticCarStateComponentSP>(new StaticCarStateComponent());
                     auto dynamicCarState = ent->assign<DynamicCarStateComponentSP>(new DynamicCarStateComponent());
-                    auto broadcStCarState = ent->assign<BroadcastCarInfoComponentSP>(new BroadcastCarInfoComponent());
+                    auto broadcastCarState = ent->assign<BroadcastCarInfoComponentSP>(new BroadcastCarInfoComponent());
+                    auto broadcastCarSummary = ent->assign<BroadcastCarSummaryComponentSP>(new BroadcastCarSummaryComponent());
 
                     staticCarState.get()->idx = pair.second->idx;
                     staticCarState.get()->name = pair.second->name;
                     staticCarState.get()->uid = pair.second->uid;
 
                     dynamicCarState.get()->idx = pair.second->idx;
-
-                    broadcStCarState.get()->idx = pair.second->idx;
+                    broadcastCarState.get()->idx = pair.second->idx;
+                    broadcastCarSummary.get()->idx = pair.second->idx;
                 }
             }
         }

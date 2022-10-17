@@ -58,4 +58,17 @@ struct BroadcastCarInfoComponent
 ECS_DEFINE_TYPE(BroadcastCarInfoComponent);
 typedef std::shared_ptr<BroadcastCarInfoComponent> BroadcastCarInfoComponentSP;
 
+struct BroadcastCarSummaryComponent
+{
+    ECS_DECLARE_TYPE;
+
+    BroadcastCarSummaryComponent() : idx(-1), tvPtsPct(0), scrTimePct(0) {}
+
+    int idx;
+    float tvPtsPct;
+    float scrTimePct;
+};
+ECS_DEFINE_TYPE(BroadcastCarSummaryComponent);
+typedef std::shared_ptr<BroadcastCarSummaryComponent> BroadcastCarSummaryComponentSP;
+
 #endif

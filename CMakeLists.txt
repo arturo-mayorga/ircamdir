@@ -38,6 +38,7 @@ add_executable(
     src/screen-time-stats-sys.cpp 
     src/tui-sys.cpp
     src/console-kb-sys.cpp
+    src/broadcast-summary-sys.cpp
 )
 
 TARGET_LINK_LIBRARIES(camdir)
