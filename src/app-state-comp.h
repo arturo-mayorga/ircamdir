@@ -8,7 +8,8 @@ enum AppMode
     CLOSEST_BATTLE,
     TV_POINT_FILL,
     HOLD_TRACK_POS,
-    PASSIVE
+    PASSIVE,
+    MODE_COUNT
 };
 
 struct ApplicationStateComponent

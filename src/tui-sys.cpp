@@ -61,6 +61,16 @@ void drawPercentBar(float percent, float maxPercent, int strSize, std::stringstr
 
 void _drawAppStateControls(class ECS::World *world)
 {
+    static int first = 1;
+    static std::string appModeNames[AppMode::MODE_COUNT];
+
+    if (first)
+    {
+        first = 0;
+        appModeNames[AppMode::PASSIVE] = "PASSIVE       ";
+        appModeNames[AppMode::TV_POINT_FILL] = "TV POINT FILL ";
+        appModeNames[AppMode::CLOSEST_BATTLE] = "CLOSEST BATTLE";
+    }
     AppMode currentMode = AppMode::PASSIVE;
     world->each<ApplicationStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<ApplicationStateComponentSP> aStateH)
@@ -69,16 +79,19 @@ void _drawAppStateControls(class ECS::World *world)
             currentMode = aState->mode;
         });
 
+    std::cout << std::endl
+              << "    Current App Mode: " << appModeNames[currentMode] << std::endl;
+
     if (currentMode != AppMode::PASSIVE)
     {
-        std::cout << std::endl
-                  << "    [Hit Spacebar to enter passive mode]" << std::endl;
+        std::cout << "    [Spacebar: enter passive mode]";
     }
     else
     {
-        std::cout << std::endl
-                  << "    [Hit Spacebar to exit passive mode]" << std::endl;
+        std::cout << "    [Spacebar: exit Passive mode]";
     }
+
+    std::cout << "  [b: Closest Battle]  [t: TV Point Fill]" << std::endl;
 }
 
 void TuiSystem::_drawScreen(class ECS::World *world)

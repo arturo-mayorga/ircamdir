@@ -41,7 +41,7 @@ void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
 
             ECS::ComponentHandle<BroadcastCarInfoComponentSP> bStateH = ent->get<BroadcastCarInfoComponentSP>();
 
-            if (bStateH.isValid())
+            if (bStateH.isValid() && !cState->isInPits)
             {
                 BroadcastCarInfoComponentSP bState = bStateH.get();
 

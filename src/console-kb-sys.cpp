@@ -24,22 +24,42 @@ void ConsoleKbSystem::tick(class ECS::World *world, float deltaTime)
     {
         auto c = _getch();
 
+        AppMode newAppMode = AppMode::MODE_COUNT;
+
         if (c == ' ')
         {
-
             world->each<ApplicationStateComponentSP>(
                 [&](ECS::Entity *ent, ECS::ComponentHandle<ApplicationStateComponentSP> aStateH)
                 {
                     ApplicationStateComponentSP aState = aStateH.get();
                     if (aState->mode == AppMode::PASSIVE)
                     {
-                        aState->mode = prevAppMode;
+                        newAppMode = prevAppMode;
                     }
                     else
                     {
                         prevAppMode = aState->mode;
-                        aState->mode = AppMode::PASSIVE;
+                        newAppMode = AppMode::PASSIVE;
                     }
+                });
+        }
+        else if (c == 't')
+        {
+            newAppMode = AppMode::TV_POINT_FILL;
+        }
+        else if (c == 'b')
+        {
+            newAppMode = AppMode::CLOSEST_BATTLE;
+        }
+
+        if (newAppMode != AppMode::MODE_COUNT)
+        {
+            world->each<ApplicationStateComponentSP>(
+                [&](ECS::Entity *ent, ECS::ComponentHandle<ApplicationStateComponentSP> aStateH)
+                {
+                    ApplicationStateComponentSP aState = aStateH.get();
+                    prevAppMode = aState->mode;
+                    aState->mode = newAppMode;
                 });
         }
     }
