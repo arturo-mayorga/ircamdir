@@ -134,7 +134,8 @@ void TuiSystem::_drawScreen(class ECS::World *world)
             sout << sComp->num << " - " << sComp->name;
             sessionNameStr = sout.str();
         });
-    std::cout << "Current Session: " << sessionNameStr << std::endl;
+    std::cout << "Current Session: " << sessionNameStr << std::endl
+              << std::endl;
 
     std::vector<std::pair<float, std::string>> screenTimeStrs;
 
