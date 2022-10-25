@@ -2,6 +2,7 @@
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
 #include "app-state-comp.h"
+#include "session-comp.h"
 
 #include <iostream>
 #include <sstream>
@@ -123,6 +124,17 @@ void TuiSystem::_drawScreen(class ECS::World *world)
                 currentCameraCarIdx = cState->idx;
             }
         });
+
+    std::string sessionNameStr("");
+    world->each<SessionComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<SessionComponentSP> sCompH)
+        {
+            SessionComponentSP sComp = sCompH.get();
+            std::stringstream sout;
+            sout << sComp->num << " - " << sComp->name;
+            sessionNameStr = sout.str();
+        });
+    std::cout << "Current Session: " << sessionNameStr << std::endl;
 
     std::vector<std::pair<float, std::string>> screenTimeStrs;
 

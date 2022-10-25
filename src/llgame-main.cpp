@@ -15,7 +15,9 @@
 
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
+
 #include "app-state-comp.h"
+#include "session-comp.h"
 
 #include <ctime>
 
@@ -56,6 +58,7 @@ int main()
     ECS::Entity *ent = world->create();
     auto camCtrlCmp = ent->assign<CameraControlComponentSP>(new CameraControlComponent());
     auto appStateCmp = ent->assign<ApplicationStateComponentSP>(new ApplicationStateComponent());
+    auto sessionCmp = ent->assign<SessionComponentSP>(new SessionComponent());
 
     std::cout << "Application Start" << std::endl
               << "==========================" << std::endl;
