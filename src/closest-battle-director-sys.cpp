@@ -1,26 +1,26 @@
-#include "battle-detect-sys.h"
+#include "closest-battle-director-sys.h"
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
 
 #include <iostream>
 #include <algorithm>
 
-BattleDetectSystem::~BattleDetectSystem()
+ClosestBattleDirectorSystem::~ClosestBattleDirectorSystem()
 {
 }
 
-void BattleDetectSystem::configure(class ECS::World *world)
+void ClosestBattleDirectorSystem::configure(class ECS::World *world)
 {
 }
 
-void BattleDetectSystem::unconfigure(class ECS::World *world)
+void ClosestBattleDirectorSystem::unconfigure(class ECS::World *world)
 {
     world->unsubscribeAll(this);
 }
 
 #define MIN_PCT_DELTA 0.005
 
-void BattleDetectSystem::tick(class ECS::World *world, float deltaTime)
+void ClosestBattleDirectorSystem::tick(class ECS::World *world, float deltaTime)
 {
     std::vector<DynamicCarStateComponentSP> states;
 

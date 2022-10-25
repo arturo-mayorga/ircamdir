@@ -34,7 +34,7 @@ add_executable(
     src/irsdk_utils.cpp
     src/yaml_parser.cpp
     src/irtelemetry-sys.cpp
-    src/battle-detect-sys.cpp
+    src/closest-battle-director-sys.cpp
     src/screen-time-stats-sys.cpp 
     src/tui-sys.cpp
     src/console-kb-sys.cpp

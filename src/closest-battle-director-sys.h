@@ -1,12 +1,12 @@
-#ifndef battle_detect_sys_h_
-#define battle_detect_sys_h_
+#ifndef closest_battle_director_sys_h_
+#define closest_battle_director_sys_h_
 
 #include "ecs.h"
 
-class BattleDetectSystem : public ECS::EntitySystem
+class ClosestBattleDirectorSystem : public ECS::EntitySystem
 {
 public:
-    virtual ~BattleDetectSystem();
+    virtual ~ClosestBattleDirectorSystem();
 
     virtual void configure(class ECS::World *world) override;
 

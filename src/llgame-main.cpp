@@ -5,7 +5,7 @@
 #include <sysinfoapi.h>
 
 #include "irtelemetry-sys.h"
-#include "battle-detect-sys.h"
+#include "closest-battle-director-sys.h"
 #include "screen-time-stats-sys.h"
 #include "tui-sys.h"
 #include "console-kb-sys.h"
@@ -47,7 +47,7 @@ int main()
 
     world->registerSystem(new TestSystem());
     world->registerSystem(new IrTelemetrySystem());
-    world->registerSystem(new BattleDetectSystem());
+    world->registerSystem(new ClosestBattleDirectorSystem());
     world->registerSystem(new ScreenTimeStatsSys());
     world->registerSystem(new TuiSystem());
     world->registerSystem(new ConsoleKbSystem());
