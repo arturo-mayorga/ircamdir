@@ -2,6 +2,7 @@
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
 #include "app-state-comp.h"
+#include "session-comp.h"
 #include <Windows.h>
 
 #include <iostream>
@@ -36,6 +37,8 @@
 irsdkCVar g_camCarIdx("CamCarIdx");
 irsdkCVar g_camGroup("CamGroupNumber");
 
+irsdkCVar g_sessionNum("SessionNum");
+
 irsdkCVar g_CarIdxLapDistPct("CarIdxLapDistPct");
 irsdkCVar g_carIdxClassPosition("CarIdxClassPosition");
 irsdkCVar g_isCarInPits("CarIdxTrackSurface");
@@ -52,6 +55,71 @@ void monitorConnectionStatus()
             printf("Lost connection to iRacing\n");
         wasConnected = isConnected;
     }
+}
+
+std::map<int, std::string> getSessionNameMap(const char *yaml)
+{
+    std::map<int, std::string> ret;
+
+    char valstr[512];
+    int valstrlen = 512;
+    char str[512];
+
+    const char *tVal = NULL;
+    int tValLen = 0;
+
+    int i = 0;
+
+    do
+    {
+        sprintf_s(str, 512, "SessionInfo:Sessions:SessionNum:{%d}SessionName:", i);
+        if (parseYaml(yaml, str, &tVal, &tValLen))
+        {
+            int len = tValLen;
+            if (len > 512)
+                len = 512;
+
+            // copy what we can, even if buffer too small
+            memcpy(valstr, tVal, len);
+            valstr[len] = '\0'; // original string has no null termination...
+
+            std::string name(valstr);
+            int sessionNum = -1;
+
+            // std::cout << " session data :: " << name << " ";
+
+            if (i == 0)
+            {
+                sprintf_s(str, 512, "SessionInfo:Sessions:SessionNum:");
+            }
+            else
+            {
+                sprintf_s(str, 512, "SessionInfo:Sessions:SessionNum:{%d}SessionNum:", i - 1);
+            }
+            if (parseYaml(yaml, str, &tVal, &tValLen))
+            {
+                int len = tValLen;
+                if (len > 512)
+                    len = 512;
+
+                // copy what we can, even if buffer too small
+                memcpy(valstr, tVal, len);
+                valstr[len] = '\0'; // original string has no null termination...
+                sessionNum = atoi(valstr);
+                // std::cout << sessionNum << "\n";
+            }
+
+            ret[sessionNum] = name;
+
+            ++i;
+        }
+        else
+        {
+            i = -1;
+        }
+    } while (i != -1);
+
+    return ret;
 }
 
 std::map<int, StaticCarStateComponentSP> getStaticCarStates(const char *yaml)
@@ -138,9 +206,6 @@ IrTelemetrySystem::~IrTelemetrySystem()
 
 void IrTelemetrySystem::configure(class ECS::World *world)
 {
-    // std::cout << "Starting iRacing Telemetry System: ";
-
-    // std::cout << "OK" << std::endl;
 }
 
 void IrTelemetrySystem::unconfigure(class ECS::World *world)
@@ -155,6 +220,7 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
     static float tSinceCamChange = 0;
     static float tSinceIrData = 0;
     static int camGroup = 0;
+    static std::map<int, std::string> sessionNameMap;
 
     tSinceCamChange += deltaTime;
     tSinceIrData += deltaTime;
@@ -168,6 +234,7 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
             first = 0;
 
             auto cStates = getStaticCarStates(irsdk_getSessionInfoStr());
+            sessionNameMap = getSessionNameMap(irsdk_getSessionInfoStr());
 
             // std::cout << "there were " << cStates.size() << " cars" << std::endl;
 
@@ -248,6 +315,14 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                 {
                     // std::cout << "got a bad idx\n";
                 }
+            });
+
+        world->each<SessionComponentSP>(
+            [&](ECS::Entity *ent, ECS::ComponentHandle<SessionComponentSP> sCompH)
+            {
+                SessionComponentSP sComp = sCompH.get();
+                sComp->num = (int)(g_sessionNum.getFloat());
+                sComp->name = sessionNameMap[sComp->num];
             });
 
         tSinceIrData = 0;

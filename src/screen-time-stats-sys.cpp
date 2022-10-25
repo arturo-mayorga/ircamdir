@@ -1,6 +1,7 @@
 #include "screen-time-stats-sys.h"
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
+#include "session-comp.h"
 
 #include <iostream>
 #include <iomanip>
@@ -19,9 +20,8 @@ void ScreenTimeStatsSys::unconfigure(class ECS::World *world)
     world->unsubscribeAll(this);
 }
 
-void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
+int getCurrentCameraTarget(ECS::World *world)
 {
-    // figure out who has the current camera
     int currentCameraTarget = -1;
     world->each<CameraControlComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
@@ -29,9 +29,11 @@ void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
             CameraControlComponentSP cState = cStateH.get();
             currentCameraTarget = cState->targetCarPosActual;
         });
+    return currentCameraTarget;
+}
 
-    // update screen and standings time
-    int currentCarIndex = -1;
+void updateScreenAndStandingsTime(ECS::World *world, float deltaTime, int currentCameraTarget)
+{
     world->each<DynamicCarStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
         {
@@ -73,8 +75,10 @@ void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
                 }
             }
         });
+}
 
-    // figure out the total screen time
+float getTotalScreenTime(ECS::World *world)
+{
     float totalScrTime = 0;
     world->each<BroadcastCarInfoComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<BroadcastCarInfoComponentSP> cStateH)
@@ -83,7 +87,11 @@ void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
             totalScrTime += cState->scrTime;
         });
 
-    // calculate the tv points
+    return totalScrTime;
+}
+
+void calculateTvPoints(ECS::World *world, float totalScrTime)
+{
     world->each<BroadcastCarInfoComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<BroadcastCarInfoComponentSP> cStateH)
         {
@@ -95,4 +103,52 @@ void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
                 cState->tvPoints = 0;
             }
         });
+}
+
+void resetBroadcastInfo(ECS::World *world)
+{
+    world->each<BroadcastCarInfoComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<BroadcastCarInfoComponentSP> bStateH)
+        {
+            BroadcastCarInfoComponentSP bState = bStateH.get();
+
+            bState->scrTime = 0;
+            bState->leadTime = 0;
+            bState->top3Time = 0;
+            bState->top5Time = 0;
+            bState->top10Time = 0;
+            bState->top20Time = 0;
+            bState->tvPoints = 1;
+        });
+}
+
+int getCurrentSessionNum(ECS::World *world)
+{
+    int currentSessionNum = -1;
+
+    world->each<SessionComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<SessionComponentSP> sCompH)
+        {
+            SessionComponentSP sComp = sCompH.get();
+            currentSessionNum = sComp->num;
+        });
+
+    return currentSessionNum;
+}
+
+void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
+{
+    static int lastSessionNum = -1;
+
+    int currentSessionNum = getCurrentSessionNum(world);
+
+    if (lastSessionNum != currentSessionNum)
+    {
+        resetBroadcastInfo(world);
+    }
+
+    lastSessionNum = currentSessionNum;
+
+    updateScreenAndStandingsTime(world, deltaTime, getCurrentCameraTarget(world));
+    calculateTvPoints(world, getTotalScreenTime(world));
 }
