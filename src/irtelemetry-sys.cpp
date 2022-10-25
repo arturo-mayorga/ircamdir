@@ -22,9 +22,9 @@
 #include <signal.h>
 #include <time.h>
 
-#include "irsdk_defines.h"
-#include "irsdk_client.h"
-#include "yaml_parser.h"
+#include "irsdk/irsdk_defines.h"
+#include "irsdk/irsdk_client.h"
+#include "irsdk/yaml_parser.h"
 
 #include <vector>
 #include <map>

@@ -29,10 +29,10 @@ TARGET_LINK_LIBRARIES(hello_test ${LIBS} )
 add_executable(
     camdir
     src/llgame-main.cpp
-    src/irsdk_client.cpp
-    src/irsdk_diskclient.cpp
-    src/irsdk_utils.cpp
-    src/yaml_parser.cpp
+    src/irsdk/irsdk_client.cpp
+    src/irsdk/irsdk_diskclient.cpp
+    src/irsdk/irsdk_utils.cpp
+    src/irsdk/yaml_parser.cpp
     src/irtelemetry-sys.cpp
     src/closest-battle-director-sys.cpp
     src/screen-time-stats-sys.cpp 
@@ -47,22 +47,22 @@ TARGET_LINK_LIBRARIES(camdir)
 
 add_executable(
     ir2stdout
-   src/ir2stdout.cpp
-    src/irsdk_client.cpp
-    src/irsdk_diskclient.cpp
-    src/irsdk_utils.cpp
-    src/yaml_parser.cpp
+    src/ir2stdout.cpp
+    src/irsdk/irsdk_client.cpp
+    src/irsdk/irsdk_diskclient.cpp
+    src/irsdk/irsdk_utils.cpp
+    src/irsdk/yaml_parser.cpp
 )
 
 TARGET_LINK_LIBRARIES(ir2stdout)
 
 add_executable(
     irsendmsg
-   src/irsendmsg.cpp
-    src/irsdk_client.cpp
-    src/irsdk_diskclient.cpp
-    src/irsdk_utils.cpp
-    src/yaml_parser.cpp
+    src/irsendmsg.cpp
+    src/irsdk/irsdk_client.cpp
+    src/irsdk/irsdk_diskclient.cpp
+    src/irsdk/irsdk_utils.cpp
+    src/irsdk/yaml_parser.cpp
 )
 
 TARGET_LINK_LIBRARIES(irsendmsg)
