@@ -3,10 +3,10 @@
 
 #include "ecs.h"
 
-class TvPointSelectorSystem : public ECS::EntitySystem
+class TvPointDirectorSystem : public ECS::EntitySystem
 {
 public:
-    virtual ~TvPointSelectorSystem();
+    virtual ~TvPointDirectorSystem();
 
     virtual void configure(class ECS::World *world) override;
 

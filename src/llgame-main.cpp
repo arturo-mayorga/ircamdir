@@ -10,7 +10,7 @@
 #include "tui-sys.h"
 #include "console-kb-sys.h"
 #include "broadcast-summary-sys.h"
-#include "tv-point-selector-sys.h"
+#include "tv-point-director-sys.h"
 #include "head-of-direction-sys.h"
 
 #include "car-comp.h"
@@ -52,7 +52,7 @@ int main()
     world->registerSystem(new TuiSystem());
     world->registerSystem(new ConsoleKbSystem());
     world->registerSystem(new BroadcastSummarySystem());
-    world->registerSystem(new TvPointSelectorSystem());
+    world->registerSystem(new TvPointDirectorSystem());
     world->registerSystem(new HeadOfDirectionSystem());
 
     ECS::Entity *ent = world->create();

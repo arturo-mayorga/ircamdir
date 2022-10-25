@@ -39,7 +39,7 @@ add_executable(
     src/tui-sys.cpp
     src/console-kb-sys.cpp
     src/broadcast-summary-sys.cpp
-    src/tv-point-selector-sys.cpp
+    src/tv-point-director-sys.cpp
     src/head-of-direction-sys.cpp
 )
 

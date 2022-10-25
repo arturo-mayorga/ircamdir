@@ -1,15 +1,15 @@
-#include "tv-point-selector-sys.h"
+#include "tv-point-director-sys.h"
 #include "car-comp.h"
 #include "cam-ctrl-comp.h"
 
 #include <iostream>
 
-TvPointSelectorSystem::~TvPointSelectorSystem() {}
+TvPointDirectorSystem::~TvPointDirectorSystem() {}
 
-void TvPointSelectorSystem::configure(class ECS::World *world) {}
-void TvPointSelectorSystem::unconfigure(class ECS::World *world) {}
+void TvPointDirectorSystem::configure(class ECS::World *world) {}
+void TvPointDirectorSystem::unconfigure(class ECS::World *world) {}
 
-void TvPointSelectorSystem::tick(class ECS::World *world, float deltaTime)
+void TvPointDirectorSystem::tick(class ECS::World *world, float deltaTime)
 {
     float unmetMaxPctDelta = 0;
     int positionForMaxUnmet = -1;
