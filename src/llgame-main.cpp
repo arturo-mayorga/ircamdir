@@ -45,20 +45,20 @@ int main()
 {
     ECS::World *world = ECS::World::createWorld();
 
-    ECS::EntitySystem *testSystem = world->registerSystem(new TestSystem());
-    ECS::EntitySystem *gamepadSystem = world->registerSystem(new IrTelemetrySystem());
-    ECS::EntitySystem *battleDetectSystem = world->registerSystem(new BattleDetectSystem());
-    ECS::EntitySystem *scrTimeSystem = world->registerSystem(new ScreenTimeStatsSys());
-    ECS::EntitySystem *tuiSys = world->registerSystem(new TuiSystem());
-    ECS::EntitySystem *consoleKbSystem = world->registerSystem(new ConsoleKbSystem());
-    ECS::EntitySystem *broadcastSummarySystem = world->registerSystem(new BroadcastSummarySystem());
-    ECS::EntitySystem *tvPointSelectorSystem = world->registerSystem(new TvPointSelectorSystem());
-    ECS::EntitySystem *headOfDirectionSystem = world->registerSystem(new HeadOfDirectionSystem());
+    world->registerSystem(new TestSystem());
+    world->registerSystem(new IrTelemetrySystem());
+    world->registerSystem(new BattleDetectSystem());
+    world->registerSystem(new ScreenTimeStatsSys());
+    world->registerSystem(new TuiSystem());
+    world->registerSystem(new ConsoleKbSystem());
+    world->registerSystem(new BroadcastSummarySystem());
+    world->registerSystem(new TvPointSelectorSystem());
+    world->registerSystem(new HeadOfDirectionSystem());
 
     ECS::Entity *ent = world->create();
-    auto camCtrlCmp = ent->assign<CameraControlComponentSP>(new CameraControlComponent());
-    auto appStateCmp = ent->assign<ApplicationStateComponentSP>(new ApplicationStateComponent());
-    auto sessionCmp = ent->assign<SessionComponentSP>(new SessionComponent());
+    ent->assign<CameraControlComponentSP>(new CameraControlComponent());
+    ent->assign<ApplicationStateComponentSP>(new ApplicationStateComponent());
+    ent->assign<SessionComponentSP>(new SessionComponent());
 
     std::cout << "Application Start" << std::endl
               << "==========================" << std::endl;

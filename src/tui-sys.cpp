@@ -10,7 +10,7 @@
 #include <map>
 #include <string>
 
-#define REFRESH_DELTA 3000
+#define REFRESH_DELTA 1000
 
 TuiSystem::~TuiSystem()
 {
