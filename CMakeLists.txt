@@ -35,7 +35,7 @@ add_executable(
     src/irsdk/yaml_parser.cpp
     src/systems/irtelemetry-sys.cpp
     src/systems/closest-battle-director-sys.cpp
-    src/systems/screen-time-stats-sys.cpp 
+    src/systems/broadcast-car-info-collector-sys.cpp 
     src/systems/tui-sys.cpp
     src/systems/console-kb-sys.cpp
     src/systems/broadcast-summary-sys.cpp

@@ -21,39 +21,18 @@
 
 #include <ctime>
 
-class TestSystem : public ECS::EntitySystem
-{
-public:
-    virtual ~TestSystem() {}
-
-    virtual void configure(class ECS::World *world) override
-    {
-    }
-
-    virtual void unconfigure(class ECS::World *world) override
-    {
-        world->unsubscribeAll(this);
-    }
-
-    virtual void tick(class ECS::World *world, float deltaTime) override
-    {
-        // std::cout << "TestSystem::tick" << std::endl;
-    }
-};
-
 int main()
 {
     ECS::World *world = ECS::World::createWorld();
 
-    world->registerSystem(new TestSystem());
     world->registerSystem(new IrTelemetrySystem());
-    world->registerSystem(new ClosestBattleDirectorSystem());
     world->registerSystem(new BroadcastCarInfoCollectorSystem());
-    world->registerSystem(new TuiSystem());
-    world->registerSystem(new ConsoleKbSystem());
     world->registerSystem(new BroadcastSummarySystem());
     world->registerSystem(new TvPointDirectorSystem());
+    world->registerSystem(new ClosestBattleDirectorSystem());
     world->registerSystem(new HeadOfDirectionSystem());
+    world->registerSystem(new TuiSystem());
+    world->registerSystem(new ConsoleKbSystem());
 
     ECS::Entity *ent = world->create();
     ent->assign<CameraControlComponentSP>(new CameraControlComponent());
