@@ -12,6 +12,12 @@
 
 #define REFRESH_DELTA 1000
 
+#define NC "\033[0m"
+#define RED "\033[0;31m"
+#define GRN "\033[0;32m"
+#define CYN "\033[0;36m"
+#define REDB "\033[41m"
+
 TuiSystem::~TuiSystem()
 {
 }
@@ -81,7 +87,7 @@ void _drawAppStateControls(class ECS::World *world)
         });
 
     std::cout << std::endl
-              << "    Current App Mode: " << appModeNames[currentMode] << std::endl;
+              << NC "    Current App Mode: " << appModeNames[currentMode] << std::endl;
 
     if (currentMode != AppMode::PASSIVE)
     {
@@ -100,7 +106,7 @@ void TuiSystem::_drawScreen(class ECS::World *world)
     const int scrRows = 60;
     const int scrCols = 80;
 
-    std::cout << std::endl
+    std::cout << NC << std::endl
               << std::endl
               << std::endl
               << std::endl;
@@ -167,16 +173,18 @@ void TuiSystem::_drawScreen(class ECS::World *world)
             StaticCarStateComponentSP cState = cStateH.get();
 
             ECS::ComponentHandle<BroadcastCarSummaryComponentSP> bStateH = ent->get<BroadcastCarSummaryComponentSP>();
-            if (bStateH.isValid())
+            ECS::ComponentHandle<DynamicCarStateComponentSP> dStateH = ent->get<DynamicCarStateComponentSP>();
+            if (bStateH.isValid() && dStateH.isValid())
             {
                 std::stringstream sout;
                 int barSize = 0;
 
                 BroadcastCarSummaryComponentSP bState = bStateH.get();
+                DynamicCarStateComponentSP dState = dStateH.get();
 
                 const int maxNameLen = 16;
                 auto dispName = cState->name.substr(0, maxNameLen);
-                sout << dispName;
+                sout << ((dState->deltaLapDistPct == 0) ? RED : GRN) << dispName;
 
                 for (int i = (int)dispName.length(); i < maxNameLen; ++i)
                 {
