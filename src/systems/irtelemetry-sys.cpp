@@ -1,8 +1,8 @@
 #include "irtelemetry-sys.h"
-#include "car-comp.h"
-#include "cam-ctrl-comp.h"
-#include "app-state-comp.h"
-#include "session-comp.h"
+#include "../components/car-comp.h"
+#include "../components/cam-ctrl-comp.h"
+#include "../components/app-state-comp.h"
+#include "../components/session-comp.h"
 #include <Windows.h>
 
 #include <iostream>
@@ -22,9 +22,9 @@
 #include <signal.h>
 #include <time.h>
 
-#include "irsdk/irsdk_defines.h"
-#include "irsdk/irsdk_client.h"
-#include "irsdk/yaml_parser.h"
+#include "../irsdk/irsdk_defines.h"
+#include "../irsdk/irsdk_client.h"
+#include "../irsdk/yaml_parser.h"
 
 #include <vector>
 #include <map>

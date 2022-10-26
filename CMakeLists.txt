@@ -33,21 +33,21 @@ add_executable(
     src/irsdk/irsdk_diskclient.cpp
     src/irsdk/irsdk_utils.cpp
     src/irsdk/yaml_parser.cpp
-    src/irtelemetry-sys.cpp
-    src/closest-battle-director-sys.cpp
-    src/screen-time-stats-sys.cpp 
-    src/tui-sys.cpp
-    src/console-kb-sys.cpp
-    src/broadcast-summary-sys.cpp
-    src/tv-point-director-sys.cpp
-    src/head-of-direction-sys.cpp
+    src/systems/irtelemetry-sys.cpp
+    src/systems/closest-battle-director-sys.cpp
+    src/systems/screen-time-stats-sys.cpp 
+    src/systems/tui-sys.cpp
+    src/systems/console-kb-sys.cpp
+    src/systems/broadcast-summary-sys.cpp
+    src/systems/tv-point-director-sys.cpp
+    src/systems/head-of-direction-sys.cpp
 )
 
 TARGET_LINK_LIBRARIES(camdir)
 
 add_executable(
     ir2stdout
-    src/ir2stdout.cpp
+    src/irsdk/examples/ir2stdout.cpp
     src/irsdk/irsdk_client.cpp
     src/irsdk/irsdk_diskclient.cpp
     src/irsdk/irsdk_utils.cpp
@@ -58,7 +58,7 @@ TARGET_LINK_LIBRARIES(ir2stdout)
 
 add_executable(
     irsendmsg
-    src/irsendmsg.cpp
+    src/irsdk/examples/irsendmsg.cpp
     src/irsdk/irsdk_client.cpp
     src/irsdk/irsdk_diskclient.cpp
     src/irsdk/irsdk_utils.cpp

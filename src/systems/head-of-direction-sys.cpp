@@ -1,6 +1,6 @@
 #include "head-of-direction-sys.h"
-#include "cam-ctrl-comp.h"
-#include "app-state-comp.h"
+#include "../components/cam-ctrl-comp.h"
+#include "../components/app-state-comp.h"
 
 HeadOfDirectionSystem::~HeadOfDirectionSystem() {}
 

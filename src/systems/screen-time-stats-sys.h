@@ -1,12 +1,12 @@
-#ifndef irtelemetry_sys_h_
-#define irtelemetry_sys_h_
+#ifndef screen_time_stats_sys_h_
+#define screen_time_stats_sys_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 
-class IrTelemetrySystem : public ECS::EntitySystem
+class ScreenTimeStatsSys : public ECS::EntitySystem
 {
 public:
-    virtual ~IrTelemetrySystem();
+    virtual ~ScreenTimeStatsSys();
 
     virtual void configure(class ECS::World *world) override;
 

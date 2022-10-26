@@ -1,7 +1,7 @@
 #ifndef session_comp_h_
 #define session_comp_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 #include <string>
 
 struct SessionComponent

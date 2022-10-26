@@ -1,12 +1,12 @@
-#ifndef broadcast_summary_sys_h_
-#define broadcast_summary_sys_h_
+#ifndef irtelemetry_sys_h_
+#define irtelemetry_sys_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 
-class BroadcastSummarySystem : public ECS::EntitySystem
+class IrTelemetrySystem : public ECS::EntitySystem
 {
 public:
-    virtual ~BroadcastSummarySystem();
+    virtual ~IrTelemetrySystem();
 
     virtual void configure(class ECS::World *world) override;
 

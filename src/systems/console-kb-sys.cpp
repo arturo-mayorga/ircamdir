@@ -1,5 +1,5 @@
 #include "console-kb-sys.h"
-#include "app-state-comp.h"
+#include "../components/app-state-comp.h"
 
 #include <conio.h>
 #include <stdio.h>

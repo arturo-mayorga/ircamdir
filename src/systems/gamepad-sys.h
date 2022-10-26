@@ -1,7 +1,7 @@
 #ifndef gamepad_sys_h_
 #define gamepad_sys_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 
 struct GamepadStateComponent
 {

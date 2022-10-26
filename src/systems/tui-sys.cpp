@@ -1,8 +1,8 @@
 #include "tui-sys.h"
-#include "car-comp.h"
-#include "cam-ctrl-comp.h"
-#include "app-state-comp.h"
-#include "session-comp.h"
+#include "../components/car-comp.h"
+#include "../components/cam-ctrl-comp.h"
+#include "../components/app-state-comp.h"
+#include "../components/session-comp.h"
 
 #include <iostream>
 #include <sstream>

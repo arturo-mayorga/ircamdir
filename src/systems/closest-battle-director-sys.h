@@ -1,21 +1,18 @@
-#ifndef tui_sys_h_
-#define tui_sys_h_
+#ifndef closest_battle_director_sys_h_
+#define closest_battle_director_sys_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 
-class TuiSystem : public ECS::EntitySystem
+class ClosestBattleDirectorSystem : public ECS::EntitySystem
 {
 public:
-    virtual ~TuiSystem();
+    virtual ~ClosestBattleDirectorSystem();
 
     virtual void configure(class ECS::World *world) override;
 
     virtual void unconfigure(class ECS::World *world) override;
 
     virtual void tick(class ECS::World *world, float deltaTime) override;
-
-private:
-    void _drawScreen(class ECS::World *world);
 };
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef cam_ctrl_comp_h_
 #define cam_ctrl_comp_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 #include <memory>
 
 struct CameraControlComponent

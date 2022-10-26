@@ -4,7 +4,7 @@
 #include <conio.h>
 #include <signal.h>
 
-#include "irsdk/irsdk_defines.h"
+#include "../irsdk_defines.h"
 
 void ex_program(int sig)
 {

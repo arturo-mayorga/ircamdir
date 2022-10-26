@@ -1,7 +1,7 @@
 #ifndef car_comp_h_
 #define car_comp_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 #include <string>
 #include <memory>
 

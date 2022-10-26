@@ -1,7 +1,7 @@
 #include "screen-time-stats-sys.h"
-#include "car-comp.h"
-#include "cam-ctrl-comp.h"
-#include "session-comp.h"
+#include "../components/car-comp.h"
+#include "../components/cam-ctrl-comp.h"
+#include "../components/session-comp.h"
 
 #include <iostream>
 #include <iomanip>

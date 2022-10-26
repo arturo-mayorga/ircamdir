@@ -4,20 +4,20 @@
 #include <Windows.h>
 #include <sysinfoapi.h>
 
-#include "irtelemetry-sys.h"
-#include "closest-battle-director-sys.h"
-#include "screen-time-stats-sys.h"
-#include "tui-sys.h"
-#include "console-kb-sys.h"
-#include "broadcast-summary-sys.h"
-#include "tv-point-director-sys.h"
-#include "head-of-direction-sys.h"
+#include "systems/irtelemetry-sys.h"
+#include "systems/closest-battle-director-sys.h"
+#include "systems/screen-time-stats-sys.h"
+#include "systems/tui-sys.h"
+#include "systems/console-kb-sys.h"
+#include "systems/broadcast-summary-sys.h"
+#include "systems/tv-point-director-sys.h"
+#include "systems/head-of-direction-sys.h"
 
-#include "car-comp.h"
-#include "cam-ctrl-comp.h"
+#include "components/car-comp.h"
+#include "components/cam-ctrl-comp.h"
 
-#include "app-state-comp.h"
-#include "session-comp.h"
+#include "components/app-state-comp.h"
+#include "components/session-comp.h"
 
 #include <ctime>
 

@@ -1,12 +1,12 @@
-#ifndef head_of_direction_sys_h_
-#define head_of_direction_sys_h_
+#ifndef tv_point_director_sys_h_
+#define tv_point_director_sys_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 
-class HeadOfDirectionSystem : public ECS::EntitySystem
+class TvPointDirectorSystem : public ECS::EntitySystem
 {
 public:
-    virtual ~HeadOfDirectionSystem();
+    virtual ~TvPointDirectorSystem();
 
     virtual void configure(class ECS::World *world) override;
 

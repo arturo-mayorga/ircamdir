@@ -1,6 +1,6 @@
 #include "closest-battle-director-sys.h"
-#include "car-comp.h"
-#include "cam-ctrl-comp.h"
+#include "../components/car-comp.h"
+#include "../components/cam-ctrl-comp.h"
 
 #include <iostream>
 #include <algorithm>

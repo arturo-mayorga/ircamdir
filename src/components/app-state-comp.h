@@ -1,7 +1,7 @@
 #ifndef app_state_comp_h_
 #define app_state_comp_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 
 enum AppMode
 {

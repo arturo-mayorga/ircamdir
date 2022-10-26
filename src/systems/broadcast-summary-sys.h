@@ -1,12 +1,12 @@
-#ifndef closest_battle_director_sys_h_
-#define closest_battle_director_sys_h_
+#ifndef broadcast_summary_sys_h_
+#define broadcast_summary_sys_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 
-class ClosestBattleDirectorSystem : public ECS::EntitySystem
+class BroadcastSummarySystem : public ECS::EntitySystem
 {
 public:
-    virtual ~ClosestBattleDirectorSystem();
+    virtual ~BroadcastSummarySystem();
 
     virtual void configure(class ECS::World *world) override;
 

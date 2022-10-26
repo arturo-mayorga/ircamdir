@@ -1,7 +1,7 @@
 #ifndef window_sys_h_
 #define window_sys_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 
 class WindowSystem : public ECS::EntitySystem
 {

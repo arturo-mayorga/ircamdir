@@ -1,12 +1,12 @@
-#ifndef screen_time_stats_sys_h_
-#define screen_time_stats_sys_h_
+#ifndef console_kb_sys_h_
+#define console_kb_sys_h_
 
-#include "ecs.h"
+#include "../ecs.h"
 
-class ScreenTimeStatsSys : public ECS::EntitySystem
+class ConsoleKbSystem : public ECS::EntitySystem
 {
 public:
-    virtual ~ScreenTimeStatsSys();
+    virtual ~ConsoleKbSystem();
 
     virtual void configure(class ECS::World *world) override;
 
