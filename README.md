@@ -12,3 +12,8 @@
  * Run `build.sh` in something like GitBash
  * Load iRacing into a race/replay session you want to watch
  * run `./build/Debug/camdir.exe
+
+### About the Code ###
+
+The camera director is implemented using a Entity Component System-based Game Loop.  Components (gray) are data stores and Systems (blue) operate based on the data contained within each system.
+![System Diagram](https://docs.google.com/drawings/d/e/2PACX-1vSKYhsDnpEdOsxjvnDTE_Y190N2_dRg-cbnHvDMkW-szTfzznUXfRF3tOQaOQ7mKi-YsKk1tn2xOIoX/pub?w=1974&h=1047)
