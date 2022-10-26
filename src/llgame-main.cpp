@@ -6,7 +6,7 @@
 
 #include "systems/irtelemetry-sys.h"
 #include "systems/closest-battle-director-sys.h"
-#include "systems/screen-time-stats-sys.h"
+#include "systems/broadcast-car-info-collector-sys.h"
 #include "systems/tui-sys.h"
 #include "systems/console-kb-sys.h"
 #include "systems/broadcast-summary-sys.h"
@@ -48,7 +48,7 @@ int main()
     world->registerSystem(new TestSystem());
     world->registerSystem(new IrTelemetrySystem());
     world->registerSystem(new ClosestBattleDirectorSystem());
-    world->registerSystem(new ScreenTimeStatsSys());
+    world->registerSystem(new BroadcastCarInfoCollectorSystem());
     world->registerSystem(new TuiSystem());
     world->registerSystem(new ConsoleKbSystem());
     world->registerSystem(new BroadcastSummarySystem());

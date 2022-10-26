@@ -1,4 +1,4 @@
-#include "screen-time-stats-sys.h"
+#include "broadcast-car-info-collector-sys.h"
 #include "../components/car-comp.h"
 #include "../components/cam-ctrl-comp.h"
 #include "../components/session-comp.h"
@@ -7,15 +7,15 @@
 #include <iomanip>
 #include <map>
 
-ScreenTimeStatsSys::~ScreenTimeStatsSys()
+BroadcastCarInfoCollectorSystem::~BroadcastCarInfoCollectorSystem()
 {
 }
 
-void ScreenTimeStatsSys::configure(class ECS::World *world)
+void BroadcastCarInfoCollectorSystem::configure(class ECS::World *world)
 {
 }
 
-void ScreenTimeStatsSys::unconfigure(class ECS::World *world)
+void BroadcastCarInfoCollectorSystem::unconfigure(class ECS::World *world)
 {
     world->unsubscribeAll(this);
 }
@@ -136,7 +136,7 @@ int getCurrentSessionNum(ECS::World *world)
     return currentSessionNum;
 }
 
-void ScreenTimeStatsSys::tick(class ECS::World *world, float deltaTime)
+void BroadcastCarInfoCollectorSystem::tick(class ECS::World *world, float deltaTime)
 {
     static int lastSessionNum = -1;
 
