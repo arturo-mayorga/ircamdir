@@ -42,7 +42,6 @@ void TvPointDirectorSystem::tick(class ECS::World *world, float deltaTime)
             CameraControlComponentSP cState = cStateH.get();
             if (positionForMaxUnmet > 0) // make sure we don't try to select the pace car
             {
-                cState->targetCarPosRequested = positionForMaxUnmet;
                 cState->tvPointsTarget = positionForMaxUnmet;
             }
         });

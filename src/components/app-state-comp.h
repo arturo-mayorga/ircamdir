@@ -16,7 +16,7 @@ struct ApplicationStateComponent
 {
     ECS_DECLARE_TYPE;
 
-    ApplicationStateComponent() : mode(AppMode::CLOSEST_BATTLE), trackPointer(1) {}
+    ApplicationStateComponent() : mode(AppMode::PASSIVE), trackPointer(1) {}
 
     AppMode mode;
     float trackPointer;

@@ -43,7 +43,7 @@ void updateScreenAndStandingsTime(ECS::World *world, float deltaTime, int curren
 
             ECS::ComponentHandle<BroadcastCarInfoComponentSP> bStateH = ent->get<BroadcastCarInfoComponentSP>();
 
-            if (bStateH.isValid() && !cState->isInPits)
+            if (bStateH.isValid() && !cState->isInPits && cState->deltaLapDistPct > 0)
             {
                 BroadcastCarInfoComponentSP bState = bStateH.get();
 
