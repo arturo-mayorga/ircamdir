@@ -331,7 +331,6 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
     int camCarPosReq = 0;
     int camCarPos = 0;
     int camCarIdx = g_camCarIdx.getInt();
-    int camCarNum = g_camCarNumber.getInt();
 
     world->each<DynamicCarStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
