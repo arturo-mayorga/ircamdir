@@ -99,6 +99,15 @@ void _drawAppStateControls(class ECS::World *world)
     }
 
     std::cout << "  [b: Closest Battle]  [t: TV Point Fill]" << std::endl;
+
+    int currentCameraTarget = -1;
+    world->each<CameraControlComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
+        {
+            CameraControlComponentSP cState = cStateH.get();
+            currentCameraTarget = cState->targetCarPosActual;
+        });
+    std::cout << "Current Cam: P - " << currentCameraTarget << std::endl;
 }
 
 void TuiSystem::_drawScreen(class ECS::World *world)
@@ -113,7 +122,7 @@ void TuiSystem::_drawScreen(class ECS::World *world)
 
     // figure out who has the current camera
     int currentCameraTarget = -1;
-    int currentCameraCarIdx = 0;
+    int currentCameraCarIdx = -1;
     world->each<CameraControlComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
         {
@@ -125,7 +134,7 @@ void TuiSystem::_drawScreen(class ECS::World *world)
         [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
         {
             DynamicCarStateComponentSP cState = cStateH.get();
-            if (currentCameraTarget == cState->officialPos)
+            if (currentCameraTarget == cState->officialPos && currentCameraTarget != 0)
             {
                 currentCameraCarIdx = cState->idx;
             }
@@ -191,9 +200,11 @@ void TuiSystem::_drawScreen(class ECS::World *world)
                     sout << " ";
                 }
 
-                sout << ((bState->idx == currentCameraCarIdx) ? " ** target: " : "    target: ");
+                sout << ((bState->idx == currentCameraCarIdx && currentCameraCarIdx != -1) ? " ** target: " : "    target: ");
                 barSize = scrCols - maxNameLen - /*size of label "    actual: "*/ 17;
                 drawPercentBar(bState->tvPtsPct, maxPctAxis, barSize, sout, 'X');
+
+                // sout << "    I - " << dState->idx;
 
                 sout << std::endl;
 
@@ -205,6 +216,8 @@ void TuiSystem::_drawScreen(class ECS::World *world)
                 sout << "    actual: ";
                 barSize = scrCols - maxNameLen - /*size of label "    actual: "*/ 17;
                 drawPercentBar(bState->scrTimePct, maxPctAxis, barSize, sout, '-');
+
+                // sout << "    P - " << dState->officialPos;
 
                 sout << std::endl;
 

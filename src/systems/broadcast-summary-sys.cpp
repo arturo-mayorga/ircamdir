@@ -49,8 +49,8 @@ void BroadcastSummarySystem::tick(class ECS::World *world, float deltaTime)
             {
                 BroadcastCarSummaryComponentSP bSumm = bSummH.get();
 
-                bSumm->tvPtsPct = bState->tvPoints / totalTvPts;
-                bSumm->scrTimePct = bState->scrTime / totalTime;
+                bSumm->tvPtsPct = (totalTvPts != 0) ? bState->tvPoints / totalTvPts : 0;
+                bSumm->scrTimePct = (totalTime != 0) ? bState->scrTime / totalTime : 0;
             }
         });
 }

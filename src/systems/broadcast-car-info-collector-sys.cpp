@@ -43,7 +43,7 @@ void updateScreenAndStandingsTime(ECS::World *world, float deltaTime, int curren
 
             ECS::ComponentHandle<BroadcastCarInfoComponentSP> bStateH = ent->get<BroadcastCarInfoComponentSP>();
 
-            if (bStateH.isValid() && !cState->isInPits && cState->deltaLapDistPct > 0)
+            if (bStateH.isValid() && !cState->isInPits && cState->deltaLapDistPct > 0 && cState->officialPos > 0)
             {
                 BroadcastCarInfoComponentSP bState = bStateH.get();
 
@@ -96,11 +96,14 @@ void calculateTvPoints(ECS::World *world, float totalScrTime)
         [&](ECS::Entity *ent, ECS::ComponentHandle<BroadcastCarInfoComponentSP> cStateH)
         {
             BroadcastCarInfoComponentSP cState = cStateH.get();
-            cState->tvPoints = 1 + ((cState->top20Time + cState->top10Time + cState->top5Time + cState->top3Time + cState->leadTime) / totalScrTime);
 
-            if (cState->idx == 0) // the pace car doesn't get points
+            if (cState->idx == 0 || totalScrTime == 0) // the pace car doesn't get points
             {
                 cState->tvPoints = 0;
+            }
+            else
+            {
+                cState->tvPoints = 1 + ((cState->top20Time + cState->top10Time + cState->top5Time + cState->top3Time + cState->leadTime) / totalScrTime);
             }
         });
 }
