@@ -16,11 +16,12 @@ struct StaticCarStateComponent
 {
     ECS_DECLARE_TYPE;
 
-    StaticCarStateComponent() : idx(-1), uid(-1), name("") {}
+    StaticCarStateComponent() : idx(-1), uid(-1), name(""), number(-1) {}
 
     int idx;
     int uid;
     std::string name;
+    int number;
 };
 ECS_DEFINE_TYPE(StaticCarStateComponent);
 typedef std::shared_ptr<StaticCarStateComponent> StaticCarStateComponentSP;

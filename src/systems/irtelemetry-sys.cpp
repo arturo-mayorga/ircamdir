@@ -186,6 +186,19 @@ std::map<int, StaticCarStateComponentSP> getStaticCarStates(const char *yaml)
                 cState->uid = atoi(valstr);
             }
 
+            sprintf_s(str, 512, "DriverInfo:Drivers:CarIdx:{%d}CarNumberRaw:", i);
+            if (parseYaml(yaml, str, &tVal, &tValLen))
+            {
+                int len = tValLen;
+                if (len > 512)
+                    len = 512;
+
+                // copy what we can, even if buffer too small
+                memcpy(valstr, tVal, len);
+                valstr[len] = '\0'; // original string has no null termination...
+                cState->number = atoi(valstr);
+            }
+
             ret[cState->idx] = cState;
 
             ++i;
@@ -250,6 +263,7 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                     {
                         existingCarIdxs.insert(cState->idx);
                         cState->idx = cStates[cState->idx]->idx;
+                        cState->number = cStates[cState->idx]->number;
                     }
                     else
                     {
@@ -276,6 +290,7 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                     staticCarState.get()->idx = pair.second->idx;
                     staticCarState.get()->name = pair.second->name;
                     staticCarState.get()->uid = pair.second->uid;
+                    staticCarState.get()->number = pair.second->number;
 
                     dynamicCarState.get()->idx = pair.second->idx;
                     broadcastCarState.get()->idx = pair.second->idx;
@@ -330,6 +345,8 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
     int changeThisFrame = 0;
     int requestedCarIdx = 0;
     int requestedCarPos = 0;
+    int requestedCarNum = 0;
+    std::string requestedCarName;
 
     int actualCarIdx = g_camCarIdx.getInt();
 
@@ -370,10 +387,26 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
             }
         });
 
+    world->each<StaticCarStateComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<StaticCarStateComponentSP> cStateH)
+        {
+            StaticCarStateComponentSP cState = cStateH.get();
+
+            int i = cState->idx;
+
+            if (cState->idx == requestedCarIdx)
+            {
+                requestedCarNum = cState->number;
+                requestedCarName = cState->name;
+            }
+        });
+
     if (changeThisFrame)
     {
-        // std::cout << "requesting camera from iRacing: " << lastCam << " -> " << camCarPosReq << std::endl;
-        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, requestedCarPos, camGroup, 0);
+        // std::cout << "requesting camera from iRacing: " << actualCarIdx << " -> " << requestedCarNum << "  ::  " << requestedCarName << std::endl;
+        // irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, requestedCarPos, camGroup, 0);
+
+        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchNum, requestedCarNum, camGroup, 0);
     }
 
     // your normal process loop would go here
