@@ -23,11 +23,11 @@ void BroadcastCarInfoCollectorSystem::unconfigure(class ECS::World *world)
 int getCurrentCameraTarget(ECS::World *world)
 {
     int currentCameraTarget = -1;
-    world->each<CameraControlComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
+    world->each<CameraActualsComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraActualsComponentSP> cStateH)
         {
-            CameraControlComponentSP cState = cStateH.get();
-            currentCameraTarget = cState->targetCarPosActual;
+            CameraActualsComponentSP cState = cStateH.get();
+            currentCameraTarget = cState->currentCarIdx;
         });
     return currentCameraTarget;
 }
@@ -43,35 +43,38 @@ void updateScreenAndStandingsTime(ECS::World *world, float deltaTime, int curren
 
             ECS::ComponentHandle<BroadcastCarInfoComponentSP> bStateH = ent->get<BroadcastCarInfoComponentSP>();
 
-            if (bStateH.isValid() && !cState->isInPits && cState->deltaLapDistPct > 0 && cState->officialPos > 0)
+            if (bStateH.isValid() && !cState->isInPits && cState->deltaLapDistPct > 0)
             {
                 BroadcastCarInfoComponentSP bState = bStateH.get();
 
-                if (currentCameraTarget == cState->officialPos)
+                if (currentCameraTarget == cState->idx)
                 {
                     float cTime = 0;
                     bState->scrTime += deltaTime;
                 }
 
-                if (cState->officialPos <= 1)
+                if (cState->officialPos > 0)
                 {
-                    bState->leadTime += deltaTime;
-                }
-                if (cState->officialPos <= 3)
-                {
-                    bState->top3Time += deltaTime;
-                }
-                if (cState->officialPos <= 5)
-                {
-                    bState->top5Time += deltaTime;
-                }
-                if (cState->officialPos <= 10)
-                {
-                    bState->top10Time += deltaTime;
-                }
-                if (cState->officialPos <= 20)
-                {
-                    bState->top20Time += deltaTime;
+                    if (cState->officialPos <= 1)
+                    {
+                        bState->leadTime += deltaTime;
+                    }
+                    if (cState->officialPos <= 3)
+                    {
+                        bState->top3Time += deltaTime;
+                    }
+                    if (cState->officialPos <= 5)
+                    {
+                        bState->top5Time += deltaTime;
+                    }
+                    if (cState->officialPos <= 10)
+                    {
+                        bState->top10Time += deltaTime;
+                    }
+                    if (cState->officialPos <= 20)
+                    {
+                        bState->top20Time += deltaTime;
+                    }
                 }
             }
         });

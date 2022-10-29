@@ -1,7 +1,6 @@
 #include "irtelemetry-sys.h"
 #include "../components/car-comp.h"
 #include "../components/cam-ctrl-comp.h"
-#include "../components/app-state-comp.h"
 #include "../components/session-comp.h"
 #include <Windows.h>
 
@@ -328,9 +327,35 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
         tSinceIrData = 0;
     }
 
-    int camCarPosReq = 0;
-    int camCarPos = 0;
-    int camCarIdx = g_camCarIdx.getInt();
+    int changeThisFrame = 0;
+    int requestedCarIdx = 0;
+    int requestedCarPos = 0;
+
+    int actualCarIdx = g_camCarIdx.getInt();
+
+    world->each<CameraActualsComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraActualsComponentSP> cStateH)
+        {
+            CameraActualsComponentSP cState = cStateH.get();
+            cState->currentCarIdx = actualCarIdx;
+
+            if (actualCarIdx != lastCam)
+            {
+                // std::cout << "cam action detected, reseting timer, new cam: " << camCarPos << std::endl;
+                tSinceCamChange = 0;
+                lastCam = actualCarIdx;
+            }
+
+            cState->timeSinceLastChange = tSinceCamChange;
+        });
+
+    world->each<CameraRequestComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraRequestComponentSP> cStateH)
+        {
+            CameraRequestComponentSP cState = cStateH.get();
+            requestedCarIdx = cState->targetCarIdx;
+            changeThisFrame = cState->changeThisFrame;
+        });
 
     world->each<DynamicCarStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
@@ -339,47 +364,16 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
 
             int i = cState->idx;
 
-            if (cState->idx == camCarIdx)
+            if (cState->idx == requestedCarIdx)
             {
-                camCarPos = cState->officialPos;
+                requestedCarPos = cState->officialPos;
             }
         });
 
-    world->each<CameraControlComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
-        {
-            CameraControlComponentSP cState = cStateH.get();
-            camCarPosReq = cState->targetCarPosRequested;
-            cState->targetCarPosActual = camCarPos;
-        });
-
-    // std::cout << "timeSinceLastCamChange " << tSinceCamChange << std::endl;
-
-    if (camCarPos != lastCam)
-    {
-        // std::cout << "cam action detected, reseting timer, new cam: " << camCarPos << std::endl;
-        tSinceCamChange = 0;
-        lastCam = camCarPos;
-    }
-
-    static AppMode lastAppMode = AppMode::PASSIVE;
-    AppMode currentAppMode = AppMode::PASSIVE;
-
-    world->each<ApplicationStateComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<ApplicationStateComponentSP> aStateH)
-        {
-            ApplicationStateComponentSP aState = aStateH.get();
-            currentAppMode = aState->mode;
-        });
-
-    int appStateChanged = lastAppMode != currentAppMode;
-    lastAppMode = currentAppMode;
-
-    if (currentAppMode != AppMode::PASSIVE &&
-        (appStateChanged || camCarPosReq != lastCam && tSinceCamChange > 10000))
+    if (changeThisFrame)
     {
         // std::cout << "requesting camera from iRacing: " << lastCam << " -> " << camCarPosReq << std::endl;
-        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, camCarPosReq, camGroup, 0);
+        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, requestedCarPos, camGroup, 0);
     }
 
     // your normal process loop would go here

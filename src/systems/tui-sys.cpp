@@ -101,13 +101,13 @@ void _drawAppStateControls(class ECS::World *world)
     std::cout << "  [b: Closest Battle]  [t: TV Point Fill]" << std::endl;
 
     int currentCameraTarget = -1;
-    world->each<CameraControlComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
+    world->each<CameraActualsComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraActualsComponentSP> cStateH)
         {
-            CameraControlComponentSP cState = cStateH.get();
-            currentCameraTarget = cState->targetCarPosActual;
+            CameraActualsComponentSP cState = cStateH.get();
+            currentCameraTarget = cState->currentCarIdx;
         });
-    std::cout << "Current Cam: P - " << currentCameraTarget << std::endl;
+    std::cout << "Current Cam: Idx - " << currentCameraTarget << std::endl;
 }
 
 void TuiSystem::_drawScreen(class ECS::World *world)
@@ -121,23 +121,12 @@ void TuiSystem::_drawScreen(class ECS::World *world)
               << std::endl;
 
     // figure out who has the current camera
-    int currentCameraTarget = -1;
     int currentCameraCarIdx = -1;
-    world->each<CameraControlComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
+    world->each<CameraActualsComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraActualsComponentSP> cStateH)
         {
-            CameraControlComponentSP cState = cStateH.get();
-            currentCameraTarget = cState->targetCarPosActual;
-        });
-
-    world->each<DynamicCarStateComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
-        {
-            DynamicCarStateComponentSP cState = cStateH.get();
-            if (currentCameraTarget == cState->officialPos && currentCameraTarget != 0)
-            {
-                currentCameraCarIdx = cState->idx;
-            }
+            CameraActualsComponentSP cState = cStateH.get();
+            currentCameraCarIdx = cState->currentCarIdx;
         });
 
     std::string sessionNameStr("");

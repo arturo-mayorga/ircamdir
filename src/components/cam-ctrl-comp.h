@@ -4,18 +4,40 @@
 #include "../ecs.h"
 #include <memory>
 
-struct CameraControlComponent
+struct CameraRequestComponent
 {
     ECS_DECLARE_TYPE;
 
-    CameraControlComponent() : targetCarPosActual(-1), targetCarPosRequested(-1), closestBattleTarget(-1), tvPointsTarget(-1) {}
+    CameraRequestComponent() : changeThisFrame(0), targetCarIdx(-1) {}
 
-    int targetCarPosActual;
-    int targetCarPosRequested;
-    int closestBattleTarget;
-    int tvPointsTarget;
+    int changeThisFrame;
+    int targetCarIdx;
 };
-ECS_DEFINE_TYPE(CameraControlComponent);
-typedef std::shared_ptr<CameraControlComponent> CameraControlComponentSP;
+ECS_DEFINE_TYPE(CameraRequestComponent);
+typedef std::shared_ptr<CameraRequestComponent> CameraRequestComponentSP;
+
+struct CameraActualsComponent
+{
+    ECS_DECLARE_TYPE;
+
+    CameraActualsComponent() : currentCarIdx(-1), timeSinceLastChange(0) {}
+
+    int currentCarIdx;
+    float timeSinceLastChange;
+};
+ECS_DEFINE_TYPE(CameraActualsComponent);
+typedef std::shared_ptr<CameraActualsComponent> CameraActualsComponentSP;
+
+struct CameraDirectionSubTargetsComponent
+{
+    ECS_DECLARE_TYPE;
+
+    CameraDirectionSubTargetsComponent() : closestBattleCarIdx(-1), tvPointsCarIdx(-1) {}
+
+    int closestBattleCarIdx;
+    int tvPointsCarIdx;
+};
+ECS_DEFINE_TYPE(CameraDirectionSubTargetsComponent);
+typedef std::shared_ptr<CameraDirectionSubTargetsComponent> CameraDirectionSubTargetsComponentSP;
 
 #endif

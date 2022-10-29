@@ -42,7 +42,7 @@ void ClosestBattleDirectorSystem::tick(class ECS::World *world, float deltaTime)
               { return a->lapDistPct > b->lapDistPct; });
 
     float minInterval = 2;
-    int minIntervalPos = -1;
+    int minIntervalCarIdx = -1;
 
     int prevIdx = -1;
     float prevLapDistPct = -1;
@@ -66,22 +66,20 @@ void ClosestBattleDirectorSystem::tick(class ECS::World *world, float deltaTime)
         if (currentInterval < minInterval)
         {
             minInterval = currentInterval;
-            minIntervalPos = c->officialPos;
+            minIntervalCarIdx = c->idx;
         }
 
         prevIdx = c->idx;
         prevLapDistPct = c->lapDistPct;
-
-        // std::cout << prevLapDistPct << " " << c->lapDistPct << std::endl;
     }
 
-    world->each<CameraControlComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
+    world->each<CameraDirectionSubTargetsComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraDirectionSubTargetsComponentSP> cStateH)
         {
-            CameraControlComponentSP cState = cStateH.get();
-            if (minIntervalPos > 0) // make sure we don't try to select the pace car
+            CameraDirectionSubTargetsComponentSP cState = cStateH.get();
+            if (minIntervalCarIdx > 0) // make sure we don't try to select the pace car
             {
-                cState->closestBattleTarget = minIntervalPos;
+                cState->closestBattleCarIdx = minIntervalCarIdx;
             }
         });
 }

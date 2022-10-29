@@ -12,7 +12,7 @@ void TvPointDirectorSystem::unconfigure(class ECS::World *world) {}
 void TvPointDirectorSystem::tick(class ECS::World *world, float deltaTime)
 {
     float unmetMaxPctDelta = 0;
-    int positionForMaxUnmet = -1;
+    int idxForMaxUnmet = -1;
     world->each<BroadcastCarSummaryComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<BroadcastCarSummaryComponentSP> cStateH)
         {
@@ -28,21 +28,19 @@ void TvPointDirectorSystem::tick(class ECS::World *world, float deltaTime)
                     {
 
                         unmetMaxPctDelta = cState->tvPtsPct - cState->scrTimePct;
-                        positionForMaxUnmet = dState->officialPos;
+                        idxForMaxUnmet = dState->idx;
                     }
-
-                    // std::cout << cState->tvPtsPct << "  " << cState->scrTimePct << "  " << cState->tvPtsPct << "  " << unmetMaxPctPts << std::endl;
                 }
             }
         });
 
-    world->each<CameraControlComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
+    world->each<CameraDirectionSubTargetsComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraDirectionSubTargetsComponentSP> cStateH)
         {
-            CameraControlComponentSP cState = cStateH.get();
-            if (positionForMaxUnmet > 0) // make sure we don't try to select the pace car
+            CameraDirectionSubTargetsComponentSP cState = cStateH.get();
+            if (idxForMaxUnmet > 0) // make sure we don't try to select the pace car
             {
-                cState->tvPointsTarget = positionForMaxUnmet;
+                cState->tvPointsCarIdx = idxForMaxUnmet;
             }
         });
 }

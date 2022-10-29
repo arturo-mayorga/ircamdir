@@ -29,18 +29,37 @@ void HeadOfDirectionSystem::tick(class ECS::World *world, float deltaTime)
             currentAppMode = cStateH.get()->mode;
         });
 
-    world->each<CameraControlComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraControlComponentSP> cStateH)
+    world->each<CameraRequestComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraRequestComponentSP> cStateH)
         {
-            CameraControlComponentSP cState = cStateH.get();
-            switch (currentAppMode)
+            CameraRequestComponentSP cState = cStateH.get();
+
+            ECS::ComponentHandle<CameraDirectionSubTargetsComponentSP> bStateH = ent->get<CameraDirectionSubTargetsComponentSP>();
+            ECS::ComponentHandle<CameraActualsComponentSP> aStateH = ent->get<CameraActualsComponentSP>();
+
+            if (bStateH.isValid() && aStateH.isValid())
             {
-            case AppMode::CLOSEST_BATTLE:
-                cState->targetCarPosRequested = cState->closestBattleTarget;
-                break;
-            case AppMode::TV_POINT_FILL:
-                cState->targetCarPosRequested = cState->tvPointsTarget;
-                break;
+                CameraDirectionSubTargetsComponentSP bState = bStateH.get();
+                CameraActualsComponentSP aState = aStateH.get();
+
+                switch (currentAppMode)
+                {
+                case AppMode::CLOSEST_BATTLE:
+                    cState->targetCarIdx = bState->closestBattleCarIdx;
+                    break;
+                case AppMode::TV_POINT_FILL:
+                    cState->targetCarIdx = bState->tvPointsCarIdx;
+                    break;
+                }
+
+                if (aState->timeSinceLastChange > 10000 && currentAppMode != AppMode::PASSIVE)
+                {
+                    cState->changeThisFrame = 1;
+                }
+                else
+                {
+                    cState->changeThisFrame = 0;
+                }
             }
         });
 
