@@ -4,6 +4,17 @@
 #include "../ecs.h"
 #include <memory>
 
+enum SpecialCarNum
+{
+    // note that this doesn't match irsdk_csMode to ensure avoidint
+    // cross dependencies
+    EXITING = -3,
+    INCIDENT = -2,
+    LEADER = -1,
+    // DRIVER + car number...
+    DRIVER = 0
+};
+
 struct CameraRequestComponent
 {
     ECS_DECLARE_TYPE;

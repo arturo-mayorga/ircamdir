@@ -12,6 +12,7 @@ void HeadOfDirectionSystem::tick(class ECS::World *world, float deltaTime)
 {
     static float appModeTime[AppMode::MODE_COUNT];
     static int first = 1;
+    static AppMode prevAppMode = AppMode::PASSIVE;
 
     if (first)
     {
@@ -50,18 +51,22 @@ void HeadOfDirectionSystem::tick(class ECS::World *world, float deltaTime)
                 case AppMode::TV_POINT_FILL:
                     cState->targetCarIdx = bState->tvPointsCarIdx;
                     break;
+                case AppMode::EXITING_CAM:
+                    cState->targetCarIdx = SpecialCarNum::EXITING;
+                    break;
+                case AppMode::INCIDENT_CAM:
+                    cState->targetCarIdx = SpecialCarNum::INCIDENT;
+                    break;
+                case AppMode::LEADER_CAM:
+                    cState->targetCarIdx = SpecialCarNum::LEADER;
+                    break;
                 }
 
-                if (aState->timeSinceLastChange > 10000 && currentAppMode != AppMode::PASSIVE)
-                {
-                    cState->changeThisFrame = 1;
-                }
-                else
-                {
-                    cState->changeThisFrame = 0;
-                }
+                cState->changeThisFrame = ((aState->timeSinceLastChange > 10000 || prevAppMode != currentAppMode) && currentAppMode != AppMode::PASSIVE) ? 1 : 0;
             }
         });
+
+    prevAppMode = currentAppMode;
 
     appModeTime[currentAppMode] += deltaTime;
 }

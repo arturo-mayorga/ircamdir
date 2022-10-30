@@ -51,6 +51,18 @@ void ConsoleKbSystem::tick(class ECS::World *world, float deltaTime)
         {
             newAppMode = AppMode::CLOSEST_BATTLE;
         }
+        else if (c == 'i')
+        {
+            newAppMode = AppMode::INCIDENT_CAM;
+        }
+        else if (c == 'l')
+        {
+            newAppMode = AppMode::LEADER_CAM;
+        }
+        else if (c == 'e')
+        {
+            newAppMode = AppMode::EXITING_CAM;
+        }
 
         if (newAppMode != AppMode::MODE_COUNT)
         {

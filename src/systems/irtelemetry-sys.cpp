@@ -403,8 +403,18 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
 
     if (changeThisFrame)
     {
-        // std::cout << "requesting camera from iRacing: " << actualCarIdx << " -> " << requestedCarNum << "  ::  " << requestedCarName << std::endl;
-        // irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, requestedCarPos, camGroup, 0);
+        if (SpecialCarNum::LEADER == requestedCarIdx)
+        {
+            requestedCarNum = irsdk_csMode::irsdk_csFocusAtLeader;
+        }
+        else if (SpecialCarNum::EXITING == requestedCarIdx)
+        {
+            requestedCarNum = irsdk_csMode::irsdk_csFocusAtExiting;
+        }
+        else if (SpecialCarNum::INCIDENT == requestedCarIdx)
+        {
+            requestedCarNum = irsdk_csMode::irsdk_csFocusAtIncident;
+        }
 
         irsdk_broadcastMsg(irsdk_BroadcastCamSwitchNum, requestedCarNum, camGroup, 0);
     }

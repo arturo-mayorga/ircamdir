@@ -9,6 +9,9 @@ enum AppMode
     TV_POINT_FILL,
     HOLD_TRACK_POS,
     PASSIVE,
+    INCIDENT_CAM,
+    LEADER_CAM,
+    EXITING_CAM,
     MODE_COUNT
 };
 

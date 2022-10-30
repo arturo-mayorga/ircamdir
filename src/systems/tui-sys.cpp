@@ -77,6 +77,9 @@ void _drawAppStateControls(class ECS::World *world)
         appModeNames[AppMode::PASSIVE] = "PASSIVE       ";
         appModeNames[AppMode::TV_POINT_FILL] = "TV POINT FILL ";
         appModeNames[AppMode::CLOSEST_BATTLE] = "CLOSEST BATTLE";
+        appModeNames[AppMode::EXITING_CAM] = "EXITING       ";
+        appModeNames[AppMode::INCIDENT_CAM] = "INCIDENT      ";
+        appModeNames[AppMode::LEADER_CAM] = "LEADER        ";
     }
     AppMode currentMode = AppMode::PASSIVE;
     world->each<ApplicationStateComponentSP>(
@@ -98,7 +101,8 @@ void _drawAppStateControls(class ECS::World *world)
         std::cout << "    [Spacebar: exit Passive mode]";
     }
 
-    std::cout << "  [b: Closest Battle]  [t: TV Point Fill]" << std::endl;
+    std::cout << "  [b: Closest Battle]  [t: TV Point Fill]" << std::endl
+              << "    [e: Exiting Pits]  [i: Incident]  [l: Leader]" << std::endl;
 
     int currentCameraTarget = -1;
     world->each<CameraActualsComponentSP>(
@@ -210,7 +214,8 @@ void TuiSystem::_drawScreen(class ECS::World *world)
 
                 sout << std::endl;
 
-                screenTimeStrs.push_back(std::pair<float, std::string>(bState->tvPtsPct, sout.str()));
+                // the "first" value is for sorting, we add 100 to the points just to push idle cars to the bottom
+                screenTimeStrs.push_back(std::pair<float, std::string>((dState->deltaLapDistPct > 0) ? bState->tvPtsPct + 1000 : bState->tvPtsPct, sout.str()));
 
                 // std::cout << sout.str();
             }
