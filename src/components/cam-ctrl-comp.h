@@ -15,17 +15,14 @@ enum SpecialCarNum
     DRIVER = 0
 };
 
-struct CameraRequestComponent
+struct OnCameraChangeRequest
 {
     ECS_DECLARE_TYPE;
 
-    CameraRequestComponent() : changeThisFrame(0), targetCarIdx(-1) {}
+    OnCameraChangeRequest(int _targetCarIdx) : targetCarIdx(_targetCarIdx) {}
 
-    int changeThisFrame;
     int targetCarIdx;
 };
-ECS_DEFINE_TYPE(CameraRequestComponent);
-typedef std::shared_ptr<CameraRequestComponent> CameraRequestComponentSP;
 
 struct CameraActualsComponent
 {

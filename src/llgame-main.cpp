@@ -35,7 +35,6 @@ int main()
     world->registerSystem(new ConsoleKbSystem());
 
     ECS::Entity *ent = world->create();
-    ent->assign<CameraRequestComponentSP>(new CameraRequestComponent());
     ent->assign<CameraActualsComponentSP>(new CameraActualsComponent());
     ent->assign<CameraDirectionSubTargetsComponentSP>(new CameraDirectionSubTargetsComponent());
     ent->assign<ApplicationStateComponentSP>(new ApplicationStateComponent());

@@ -30,12 +30,9 @@ void HeadOfDirectionSystem::tick(class ECS::World *world, float deltaTime)
             currentAppMode = cStateH.get()->mode;
         });
 
-    world->each<CameraRequestComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraRequestComponentSP> cStateH)
+    world->each<CameraDirectionSubTargetsComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraDirectionSubTargetsComponentSP> bStateH)
         {
-            CameraRequestComponentSP cState = cStateH.get();
-
-            ECS::ComponentHandle<CameraDirectionSubTargetsComponentSP> bStateH = ent->get<CameraDirectionSubTargetsComponentSP>();
             ECS::ComponentHandle<CameraActualsComponentSP> aStateH = ent->get<CameraActualsComponentSP>();
 
             if (bStateH.isValid() && aStateH.isValid())
@@ -43,26 +40,30 @@ void HeadOfDirectionSystem::tick(class ECS::World *world, float deltaTime)
                 CameraDirectionSubTargetsComponentSP bState = bStateH.get();
                 CameraActualsComponentSP aState = aStateH.get();
 
-                switch (currentAppMode)
+                if ((aState->timeSinceLastChange > 10000 || prevAppMode != currentAppMode) && currentAppMode != AppMode::PASSIVE)
                 {
-                case AppMode::CLOSEST_BATTLE:
-                    cState->targetCarIdx = bState->closestBattleCarIdx;
-                    break;
-                case AppMode::TV_POINT_FILL:
-                    cState->targetCarIdx = bState->tvPointsCarIdx;
-                    break;
-                case AppMode::EXITING_CAM:
-                    cState->targetCarIdx = SpecialCarNum::EXITING;
-                    break;
-                case AppMode::INCIDENT_CAM:
-                    cState->targetCarIdx = SpecialCarNum::INCIDENT;
-                    break;
-                case AppMode::LEADER_CAM:
-                    cState->targetCarIdx = SpecialCarNum::LEADER;
-                    break;
-                }
+                    int targetCarIdx;
+                    switch (currentAppMode)
+                    {
+                    case AppMode::CLOSEST_BATTLE:
+                        targetCarIdx = bState->closestBattleCarIdx;
+                        break;
+                    case AppMode::TV_POINT_FILL:
+                        targetCarIdx = bState->tvPointsCarIdx;
+                        break;
+                    case AppMode::EXITING_CAM:
+                        targetCarIdx = SpecialCarNum::EXITING;
+                        break;
+                    case AppMode::INCIDENT_CAM:
+                        targetCarIdx = SpecialCarNum::INCIDENT;
+                        break;
+                    case AppMode::LEADER_CAM:
+                        targetCarIdx = SpecialCarNum::LEADER;
+                        break;
+                    }
 
-                cState->changeThisFrame = ((aState->timeSinceLastChange > 10000 || prevAppMode != currentAppMode) && currentAppMode != AppMode::PASSIVE) ? 1 : 0;
+                    world->emit<OnCameraChangeRequest>(OnCameraChangeRequest(targetCarIdx));
+                }
             }
         });
 

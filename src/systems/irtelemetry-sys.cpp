@@ -218,11 +218,50 @@ IrTelemetrySystem::~IrTelemetrySystem()
 
 void IrTelemetrySystem::configure(class ECS::World *world)
 {
+    world->subscribe<OnCameraChangeRequest>(this);
 }
 
 void IrTelemetrySystem::unconfigure(class ECS::World *world)
 {
     world->unsubscribeAll(this);
+}
+
+void IrTelemetrySystem::receive(ECS::World *world, const OnCameraChangeRequest &event)
+{
+
+    int requestedCarIdx = event.targetCarIdx;
+    int requestedCarNum = 0;
+    std::string requestedCarName;
+
+    int camGroup = g_camGroup.getInt();
+
+    world->each<StaticCarStateComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<StaticCarStateComponentSP> cStateH)
+        {
+            StaticCarStateComponentSP cState = cStateH.get();
+
+            int i = cState->idx;
+
+            if (cState->idx == requestedCarIdx)
+            {
+                requestedCarNum = cState->number;
+            }
+        });
+
+    if (SpecialCarNum::LEADER == requestedCarIdx)
+    {
+        requestedCarNum = irsdk_csMode::irsdk_csFocusAtLeader;
+    }
+    else if (SpecialCarNum::EXITING == requestedCarIdx)
+    {
+        requestedCarNum = irsdk_csMode::irsdk_csFocusAtExiting;
+    }
+    else if (SpecialCarNum::INCIDENT == requestedCarIdx)
+    {
+        requestedCarNum = irsdk_csMode::irsdk_csFocusAtIncident;
+    }
+
+    irsdk_broadcastMsg(irsdk_BroadcastCamSwitchNum, requestedCarNum, camGroup, 0);
 }
 
 void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
@@ -231,7 +270,6 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
     static int lastCam = -1;
     static float tSinceCamChange = 0;
     static float tSinceIrData = 0;
-    static int camGroup = 0;
     static std::map<int, std::string> sessionNameMap;
 
     tSinceCamChange += deltaTime;
@@ -299,8 +337,6 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
             }
         }
 
-        camGroup = g_camGroup.getInt();
-
         world->each<DynamicCarStateComponentSP>(
             [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
             {
@@ -342,12 +378,6 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
         tSinceIrData = 0;
     }
 
-    int changeThisFrame = 0;
-    int requestedCarIdx = 0;
-    int requestedCarPos = 0;
-    int requestedCarNum = 0;
-    std::string requestedCarName;
-
     int actualCarIdx = g_camCarIdx.getInt();
 
     world->each<CameraActualsComponentSP>(
@@ -365,59 +395,6 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
 
             cState->timeSinceLastChange = tSinceCamChange;
         });
-
-    world->each<CameraRequestComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraRequestComponentSP> cStateH)
-        {
-            CameraRequestComponentSP cState = cStateH.get();
-            requestedCarIdx = cState->targetCarIdx;
-            changeThisFrame = cState->changeThisFrame;
-        });
-
-    world->each<DynamicCarStateComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
-        {
-            DynamicCarStateComponentSP cState = cStateH.get();
-
-            int i = cState->idx;
-
-            if (cState->idx == requestedCarIdx)
-            {
-                requestedCarPos = cState->officialPos;
-            }
-        });
-
-    world->each<StaticCarStateComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<StaticCarStateComponentSP> cStateH)
-        {
-            StaticCarStateComponentSP cState = cStateH.get();
-
-            int i = cState->idx;
-
-            if (cState->idx == requestedCarIdx)
-            {
-                requestedCarNum = cState->number;
-                requestedCarName = cState->name;
-            }
-        });
-
-    if (changeThisFrame)
-    {
-        if (SpecialCarNum::LEADER == requestedCarIdx)
-        {
-            requestedCarNum = irsdk_csMode::irsdk_csFocusAtLeader;
-        }
-        else if (SpecialCarNum::EXITING == requestedCarIdx)
-        {
-            requestedCarNum = irsdk_csMode::irsdk_csFocusAtExiting;
-        }
-        else if (SpecialCarNum::INCIDENT == requestedCarIdx)
-        {
-            requestedCarNum = irsdk_csMode::irsdk_csFocusAtIncident;
-        }
-
-        irsdk_broadcastMsg(irsdk_BroadcastCamSwitchNum, requestedCarNum, camGroup, 0);
-    }
 
     // your normal process loop would go here
     monitorConnectionStatus();
