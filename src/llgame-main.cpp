@@ -8,7 +8,6 @@
 #include "systems/closest-battle-director-sys.h"
 #include "systems/broadcast-car-info-collector-sys.h"
 #include "systems/tui-sys.h"
-#include "systems/console-kb-sys.h"
 #include "systems/broadcast-summary-sys.h"
 #include "systems/tv-point-director-sys.h"
 #include "systems/head-of-direction-sys.h"
@@ -31,8 +30,8 @@ int main()
     world->registerSystem(new TvPointDirectorSystem());
     world->registerSystem(new ClosestBattleDirectorSystem());
     world->registerSystem(new HeadOfDirectionSystem());
-    world->registerSystem(new TuiSystem());
-    world->registerSystem(new ConsoleKbSystem());
+    TuiSystem *tui = new TuiSystem();
+    world->registerSystem(tui);
 
     ECS::Entity *ent = world->create();
     ent->assign<CameraActualsComponentSP>(new CameraActualsComponent());
@@ -40,18 +39,20 @@ int main()
     ent->assign<ApplicationStateComponentSP>(new ApplicationStateComponent());
     ent->assign<SessionComponentSP>(new SessionComponent());
 
-    std::cout << "Application Start" << std::endl
-              << "==========================" << std::endl;
+    // std::cout << "Application Start" << std::endl
+    //           << "==========================" << std::endl;
 
     auto tPrev = GetTickCount();
 
-    for (;;)
+    while (!tui->isFinished())
     {
         auto t = GetTickCount();
         world->tick((float)(t - tPrev));
         Sleep(10);
         tPrev = t;
     }
+
+    world->destroyWorld();
 
     return 0;
 }

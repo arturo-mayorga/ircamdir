@@ -6,10 +6,24 @@ set(CMAKE_CXX_STANDARD 17)
 
 
 include(FetchContent)
+
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
 )
+
+FetchContent_Declare(ftxui
+  GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
+  GIT_TAG "dfdbe1eecf0451e0da5420c4b9c39ecb415681ac"
+  # GIT_TAG v3.0.0
+)
+
+FetchContent_GetProperties(ftxui)
+if(NOT ftxui_POPULATED)
+  FetchContent_Populate(ftxui)
+  add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
@@ -37,13 +51,16 @@ add_executable(
     src/systems/closest-battle-director-sys.cpp
     src/systems/broadcast-car-info-collector-sys.cpp 
     src/systems/tui-sys.cpp
-    src/systems/console-kb-sys.cpp
     src/systems/broadcast-summary-sys.cpp
     src/systems/tv-point-director-sys.cpp
     src/systems/head-of-direction-sys.cpp
 )
 
-TARGET_LINK_LIBRARIES(camdir)
+TARGET_LINK_LIBRARIES(camdir
+  PRIVATE ftxui::screen
+  PRIVATE ftxui::dom
+  PRIVATE ftxui::component 
+)
 
 add_executable(
     ir2stdout

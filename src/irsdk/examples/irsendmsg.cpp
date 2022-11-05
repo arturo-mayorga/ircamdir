@@ -76,6 +76,20 @@ int main()
         char c = (char)_getch();
         switch (c)
         {
+        case '2':
+            printf("Next Incident tape\n");
+            irsdk_broadcastMsg(irsdk_BroadcastReplaySearch, irsdk_RpySrch_NextIncident, 0);
+            break;
+        case '1':
+            printf("Start tape\n");
+            irsdk_broadcastMsg(irsdk_BroadcastReplaySearch, irsdk_RpySrch_ToStart, 0);
+            break;
+
+            // case '3':
+            //     printf("Clear replay tape\n");
+            //     irsdk_broadcastMsg(irsdk_BroadcastReplaySetState, irsdk_RpyState_EraseTape, 0);
+            //     break;
+
         case 'a':
             printf("Switching camera to Pos 1, Group 1\n");
             irsdk_broadcastMsg(irsdk_BroadcastCamSwitchPos, 1, 1, 0);

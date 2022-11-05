@@ -7,7 +7,6 @@ enum AppMode
 {
     CLOSEST_BATTLE,
     TV_POINT_FILL,
-    HOLD_TRACK_POS,
     PASSIVE,
     INCIDENT_CAM,
     LEADER_CAM,

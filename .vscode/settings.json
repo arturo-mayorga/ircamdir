@@ -84,6 +84,10 @@
         "deque": "cpp",
         "fstream": "cpp",
         "typeindex": "cpp",
-        "unordered_set": "cpp"
+        "unordered_set": "cpp",
+        "codecvt": "cpp",
+        "csignal": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     }
 }

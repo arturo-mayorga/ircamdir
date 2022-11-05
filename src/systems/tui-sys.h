@@ -2,9 +2,16 @@
 #define tui_sys_h_
 
 #include "../ecs.h"
+#include "ftxui/component/loop.hpp"
 
 class TuiSystem : public ECS::EntitySystem
 {
+private:
+    int _appMode = 0;
+    ECS::World *_activeWorld = NULL;
+    ftxui::Loop *_ftuiLoop = NULL;
+    int _isFinished = 0;
+
 public:
     virtual ~TuiSystem();
 
@@ -14,8 +21,7 @@ public:
 
     virtual void tick(class ECS::World *world, float deltaTime) override;
 
-private:
-    void _drawScreen(class ECS::World *world);
+    int isFinished() { return _isFinished; }
 };
 
 #endif

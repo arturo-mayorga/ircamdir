@@ -49,9 +49,13 @@ void monitorConnectionStatus()
     if (wasConnected != isConnected)
     {
         if (isConnected)
-            printf("Connected to iRacing\n");
+        {
+            // printf("Connected to iRacing\n");
+        }
         else
-            printf("Lost connection to iRacing\n");
+        {
+            //   printf("Lost connection to iRacing\n");
+        }
         wasConnected = isConnected;
     }
 }
@@ -121,6 +125,11 @@ std::map<int, std::string> getSessionNameMap(const char *yaml)
     return ret;
 }
 
+bool invalidChar(char c)
+{
+    return !(c >= 0 && c < 128);
+}
+
 std::map<int, StaticCarStateComponentSP> getStaticCarStates(const char *yaml)
 {
     // TODO: figure out a cheaper way to do this
@@ -149,6 +158,8 @@ std::map<int, StaticCarStateComponentSP> getStaticCarStates(const char *yaml)
 
             StaticCarStateComponentSP cState(new StaticCarStateComponent());
             cState->name = valstr;
+
+            cState->name.erase(remove_if(cState->name.begin(), cState->name.end(), invalidChar), cState->name.end());
 
             // std::cout << ":: " << valstr << " ";
 
