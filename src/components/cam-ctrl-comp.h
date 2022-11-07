@@ -28,10 +28,12 @@ struct CameraActualsComponent
 {
     ECS_DECLARE_TYPE;
 
-    CameraActualsComponent() : currentCarIdx(-1), timeSinceLastChange(0) {}
+    CameraActualsComponent() : currentCarIdx(-1), timeSinceLastChange(0), replayFrameNum(-1), replayFrameNumEnd(-1) {}
 
     int currentCarIdx;
     float timeSinceLastChange;
+    int replayFrameNum;
+    int replayFrameNumEnd;
 };
 ECS_DEFINE_TYPE(CameraActualsComponent);
 typedef std::shared_ptr<CameraActualsComponent> CameraActualsComponentSP;

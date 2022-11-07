@@ -2,6 +2,9 @@
 #include "../components/car-comp.h"
 #include "../components/cam-ctrl-comp.h"
 #include "../components/session-comp.h"
+
+#include "../ecs-util.h"
+
 #include <Windows.h>
 
 #include <iostream>
@@ -41,6 +44,10 @@ irsdkCVar g_sessionNum("SessionNum");
 irsdkCVar g_CarIdxLapDistPct("CarIdxLapDistPct");
 irsdkCVar g_carIdxClassPosition("CarIdxClassPosition");
 irsdkCVar g_isCarInPits("CarIdxTrackSurface");
+
+irsdkCVar g_replayFrameNum("ReplayFrameNum");
+irsdkCVar g_replayFrameNumEnd("ReplayFrameNumEnd");
+
 void monitorConnectionStatus()
 {
     // keep track of connection status
@@ -378,34 +385,23 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                 }
             });
 
-        world->each<SessionComponentSP>(
-            [&](ECS::Entity *ent, ECS::ComponentHandle<SessionComponentSP> sCompH)
-            {
-                SessionComponentSP sComp = sCompH.get();
-                sComp->num = (int)(g_sessionNum.getFloat());
-                sComp->name = sessionNameMap[sComp->num];
-            });
+        SessionComponentSP sessionComp = ECSUtil::getFirstCmp<SessionComponentSP>(world);
+        sessionComp->num = g_sessionNum.getInt();
+        sessionComp->name = sessionNameMap[sessionComp->num];
 
         tSinceIrData = 0;
     }
 
-    int actualCarIdx = g_camCarIdx.getInt();
-
-    world->each<CameraActualsComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<CameraActualsComponentSP> cStateH)
-        {
-            CameraActualsComponentSP cState = cStateH.get();
-            cState->currentCarIdx = actualCarIdx;
-
-            if (actualCarIdx != lastCam)
-            {
-                // std::cout << "cam action detected, reseting timer, new cam: " << camCarPos << std::endl;
-                tSinceCamChange = 0;
-                lastCam = actualCarIdx;
-            }
-
-            cState->timeSinceLastChange = tSinceCamChange;
-        });
+    CameraActualsComponentSP cameraActualsCmp = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
+    cameraActualsCmp->timeSinceLastChange = tSinceCamChange;
+    cameraActualsCmp->replayFrameNum = g_replayFrameNum.getInt();
+    cameraActualsCmp->replayFrameNumEnd = g_replayFrameNumEnd.getInt();
+    cameraActualsCmp->currentCarIdx = g_camCarIdx.getInt();
+    if (cameraActualsCmp->currentCarIdx != lastCam)
+    {
+        tSinceCamChange = 0;
+        lastCam = cameraActualsCmp->currentCarIdx;
+    }
 
     // your normal process loop would go here
     monitorConnectionStatus();

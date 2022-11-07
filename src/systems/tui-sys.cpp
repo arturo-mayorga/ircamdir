@@ -1,4 +1,5 @@
 #include "tui-sys.h"
+#include "../ecs-util.h"
 #include "../components/car-comp.h"
 #include "../components/cam-ctrl-comp.h"
 #include "../components/app-state-comp.h"
@@ -16,21 +17,58 @@
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 
-struct TuiDriverEntry
+ftxui::Component TvDriverTable(std::vector<TvDriverTableEntrySP> &cars)
 {
-    std::string name;
-    float targetBarVal;
-    std::string targetStrVal;
-    float actualBarVal;
-    std::string actualStrVal;
-    int isCarSelected;
-    int isCarStatic;
-};
-typedef std::shared_ptr<TuiDriverEntry> TuiDriverEntrySP;
+    using namespace ftxui;
 
-std::vector<TuiDriverEntrySP> getDriverEntries(class ECS::World *world)
+    return ftxui::Renderer([&]
+                           {                             
+        ftxui::Elements nameElements({
+            text("Name"),
+        });
+        ftxui::Elements currentCarElements({text("  ")});
+        ftxui::Elements gaugeElements({text("Screen Time")});
+        ftxui::Elements percentVElements({text("")});
+
+            for (auto c : cars)
+            {
+                auto color1 = Color::Green;
+                auto color2 = Color::DarkGreen;
+
+                if (c->isCarStatic)
+                {
+                    color1 = Color::Red;
+                    color2 = Color::DarkRed;
+                }
+
+                nameElements.push_back(color(color1, text(c->name)));
+                currentCarElements.push_back(text(c->isCarSelected ? "**" : "  "));
+                gaugeElements.push_back(color(color1, gauge(c->targetBarVal)));
+                percentVElements.push_back(color(color1, text(c->targetStrVal)));
+
+                nameElements.push_back(color(color2, text("")));
+                currentCarElements.push_back(text("  "));
+                gaugeElements.push_back(color(color2, gauge(c->actualBarVal)));
+                percentVElements.push_back(color(color2, text(c->actualStrVal)));
+            }
+
+        ftxui::Elements e({
+            hbox({
+                vbox(nameElements),
+                vbox(currentCarElements),
+                vbox(gaugeElements) | flex,
+                vbox(percentVElements),
+
+            }) | border,
+        });
+        auto r = vbox(e);
+
+        return r; });
+}
+
+std::vector<TvDriverTableEntrySP> getTvDriverEntries(class ECS::World *world)
 {
-    std::vector<TuiDriverEntrySP> ret;
+    std::vector<TvDriverTableEntrySP> ret;
 
     // figure out who has the current camera
     int currentCameraCarIdx = -1;
@@ -41,7 +79,7 @@ std::vector<TuiDriverEntrySP> getDriverEntries(class ECS::World *world)
             currentCameraCarIdx = cState->currentCarIdx;
         });
 
-    std::vector<std::pair<float, TuiDriverEntrySP>> screenTimeStrs;
+    std::vector<std::pair<float, TvDriverTableEntrySP>> screenTimeStrs;
 
     float maxScrPercent = 0;
     float maxTvPtsPercent = 0;
@@ -72,7 +110,7 @@ std::vector<TuiDriverEntrySP> getDriverEntries(class ECS::World *world)
             ECS::ComponentHandle<DynamicCarStateComponentSP> dStateH = ent->get<DynamicCarStateComponentSP>();
             if (bStateH.isValid() && dStateH.isValid())
             {
-                TuiDriverEntrySP entry(new TuiDriverEntry());
+                TvDriverTableEntrySP entry(new TvDriverTableEntry());
                 int barSize = 0;
 
                 BroadcastCarSummaryComponentSP bState = bStateH.get();
@@ -100,11 +138,11 @@ std::vector<TuiDriverEntrySP> getDriverEntries(class ECS::World *world)
                 }
 
                 // the "first" value is for sorting, we add 100 to the points just to push idle cars to the bottom
-                screenTimeStrs.push_back(std::pair<float, TuiDriverEntrySP>((dState->deltaLapDistPct > 0) ? bState->tvPtsPct + 1000 : bState->tvPtsPct, entry));
+                screenTimeStrs.push_back(std::pair<float, TvDriverTableEntrySP>((dState->deltaLapDistPct > 0) ? bState->tvPtsPct + 1000 : bState->tvPtsPct, entry));
             }
         });
 
-    std::sort(screenTimeStrs.begin(), screenTimeStrs.end(), [](std::pair<float, TuiDriverEntrySP> &a, std::pair<float, TuiDriverEntrySP> &b)
+    std::sort(screenTimeStrs.begin(), screenTimeStrs.end(), [](std::pair<float, TvDriverTableEntrySP> &a, std::pair<float, TvDriverTableEntrySP> &b)
               { return a.first > b.first; });
 
     for (auto p : screenTimeStrs)
@@ -115,83 +153,22 @@ std::vector<TuiDriverEntrySP> getDriverEntries(class ECS::World *world)
     return ret;
 }
 
-TuiSystem::~TuiSystem()
+ftxui::Component SimpleLabel(std::string &text)
 {
+    return ftxui::Renderer([&]
+                           { return ftxui::text(text); });
 }
 
-ftxui::Element renderHandler(class ECS::World *world)
-{
-    using namespace ftxui;
-    ftxui::Elements nameElements({
-        text("Name"),
-    });
-    ftxui::Elements currentCarElements({text("  ")});
-    ftxui::Elements gaugeElements({text("Screen Time")});
-    ftxui::Elements percentVElements({text("")});
-
-    if (world)
-    {
-        auto cars = getDriverEntries(world);
-
-        for (auto c : cars)
-        {
-            auto color1 = Color::Green;
-            auto color2 = Color::DarkGreen;
-
-            if (c->isCarStatic)
-            {
-                color1 = Color::Red;
-                color2 = Color::DarkRed;
-            }
-
-            nameElements.push_back(color(color1, text(c->name)));
-            currentCarElements.push_back(text(c->isCarSelected ? "**" : "  "));
-            gaugeElements.push_back(color(color1, gauge(c->targetBarVal)));
-            percentVElements.push_back(color(color1, text(c->targetStrVal)));
-
-            nameElements.push_back(color(color2, text("")));
-            currentCarElements.push_back(text("  "));
-            gaugeElements.push_back(color(color2, gauge(c->actualBarVal)));
-            percentVElements.push_back(color(color2, text(c->actualStrVal)));
-        }
-    }
-
-    std::string sessionNameStr("");
-    world->each<SessionComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<SessionComponentSP> sCompH)
-        {
-            SessionComponentSP sComp = sCompH.get();
-            std::stringstream sout;
-            sout << "Session: " << sComp->num << " - " << sComp->name;
-            sessionNameStr = sout.str();
-        });
-
-    ftxui::Elements e({
-        text(sessionNameStr),
-        hbox({
-            vbox(nameElements),
-            vbox(currentCarElements),
-            vbox(gaugeElements) | flex,
-            vbox(percentVElements),
-
-        }) | border,
-    });
-    auto r = vbox(e);
-
-    return r;
-}
+TuiSystem::~TuiSystem() {}
 
 void TuiSystem::configure(class ECS::World *world)
 {
     using namespace ftxui;
     static auto screen = ScreenInteractive::Fullscreen();
 
-    static auto driverTable = Renderer([&]
-                                       { 
-    screen.PostEvent(Event::Custom); // post an event to make sure the ui responds to live data updates
-    return renderHandler(_activeWorld); });
+    _dispModel.appMode = 0;
 
-    static std::vector<std::string> entries = {
+    _dispModel.appModeEntries = {
         "Closest Battle",
         "TV Point Fill",
         "Passive",
@@ -200,12 +177,17 @@ void TuiSystem::configure(class ECS::World *world)
         "Exiting Cam",
     };
 
-    static auto appModeDropDown = Dropdown(&entries, &_appMode);
+    auto appModeLabel = Renderer([]
+                                 { 
+                                    screen.PostEvent(Event::Custom); // post an event to make sure the ui responds to live data updates
+                                    return text("App Mode:"); });
 
-    static auto layout = Container::Vertical({Renderer([]
-                                                       { return text("App Mode:"); }),
-                                              appModeDropDown,
-                                              driverTable});
+    static auto layout = Container::Vertical(
+        {SimpleLabel(_dispModel.currentFrameInfo),
+         Container::Horizontal({appModeLabel,
+                                Dropdown(&_dispModel.appModeEntries, &_dispModel.appMode)}),
+         SimpleLabel(_dispModel.sessionNameStr),
+         TvDriverTable(_dispModel.tvDriverTableEntries)});
 
     _ftuiLoop = new Loop(&screen, layout);
 }
@@ -219,15 +201,28 @@ void TuiSystem::unconfigure(class ECS::World *world)
 
 void TuiSystem::tick(class ECS::World *world, float deltaTime)
 {
-    _activeWorld = world;
+    ApplicationStateComponentSP appStateComponent = ECSUtil::getFirstCmp<ApplicationStateComponentSP>(world);
+    SessionComponentSP sessionComponent = ECSUtil::getFirstCmp<SessionComponentSP>(world);
+    CameraActualsComponentSP cameraActualsComponent = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
 
-    world->each<ApplicationStateComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<ApplicationStateComponentSP> aStateH)
-        {
-            ApplicationStateComponentSP aState = aStateH.get();
-            _appMode = aState->mode;
-        });
+    _dispModel.appMode = appStateComponent->mode;
 
+    _dispModel.tvDriverTableEntries = getTvDriverEntries(world);
+
+    {
+        std::stringstream sout;
+        sout << "Session: " << sessionComponent->num << " - " << sessionComponent->name;
+        _dispModel.sessionNameStr = sout.str();
+    }
+
+    {
+        std::stringstream sout;
+        sout << "Frame Num: " << cameraActualsComponent->replayFrameNum << "  Frame Num End: " << cameraActualsComponent->replayFrameNumEnd;
+        _dispModel.currentFrameInfo = sout.str();
+        ;
+    }
+
+    // update ui
     if (_ftuiLoop && !_ftuiLoop->HasQuitted())
     {
         _ftuiLoop->RunOnce();
@@ -236,11 +231,7 @@ void TuiSystem::tick(class ECS::World *world, float deltaTime)
     {
         _isFinished = 1;
     }
+    // end update ui
 
-    world->each<ApplicationStateComponentSP>(
-        [&](ECS::Entity *ent, ECS::ComponentHandle<ApplicationStateComponentSP> aStateH)
-        {
-            ApplicationStateComponentSP aState = aStateH.get();
-            aState->mode = (AppMode)_appMode;
-        });
+    appStateComponent->mode = (AppMode)(_dispModel.appMode);
 }
