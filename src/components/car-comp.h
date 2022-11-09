@@ -37,6 +37,7 @@ struct DynamicCarStateComponent
     int idx;
     int officialPos;
     int isInPits;
+    int currentLap;
 };
 ECS_DEFINE_TYPE(DynamicCarStateComponent);
 typedef std::shared_ptr<DynamicCarStateComponent> DynamicCarStateComponentSP;
@@ -71,5 +72,22 @@ struct BroadcastCarSummaryComponent
 };
 ECS_DEFINE_TYPE(BroadcastCarSummaryComponent);
 typedef std::shared_ptr<BroadcastCarSummaryComponent> BroadcastCarSummaryComponentSP;
+
+struct CarEvent
+{
+    int frameNumber;
+    int carIdx;
+    int secCarIdx;
+};
+typedef std::shared_ptr<CarEvent> CarEventSP;
+
+struct OvertakeSummaryComponent
+{
+    ECS_DECLARE_TYPE;
+
+    std::vector<CarEventSP> events;
+};
+ECS_DEFINE_TYPE(OvertakeSummaryComponent);
+typedef std::shared_ptr<OvertakeSummaryComponent> OvertakeSummaryComponentSP;
 
 #endif

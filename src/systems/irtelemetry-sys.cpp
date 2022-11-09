@@ -43,6 +43,7 @@ irsdkCVar g_sessionNum("SessionNum");
 
 irsdkCVar g_CarIdxLapDistPct("CarIdxLapDistPct");
 irsdkCVar g_carIdxClassPosition("CarIdxClassPosition");
+irsdkCVar g_carIdxLap("CarIdxLap");
 irsdkCVar g_isCarInPits("CarIdxTrackSurface");
 
 irsdkCVar g_replayFrameNum("ReplayFrameNum");
@@ -370,6 +371,16 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
                     cState->officialPos = (int)g_carIdxClassPosition.getFloat(i);
                     cState->isInPits = ((int)g_isCarInPits.getFloat(i)) == irsdk_TrkLoc::irsdk_InPitStall;
 
+                    int newLap = g_carIdxLap.getInt(i);
+                    if (cState->currentLap < newLap)
+                    {
+                        // sometimes iRacing sends bad data when the car is crossing the
+                        // start finish line, handle it here
+                        cState->lapDistPct = 0;
+                    }
+
+                    cState->currentLap = newLap;
+
                     float deltaLapDistPct = cState->lapDistPct - oldLapPct;
                     if (deltaLapDistPct < 0)
                     {
@@ -390,17 +401,17 @@ void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)
         sessionComp->name = sessionNameMap[sessionComp->num];
 
         tSinceIrData = 0;
-    }
 
-    CameraActualsComponentSP cameraActualsCmp = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
-    cameraActualsCmp->timeSinceLastChange = tSinceCamChange;
-    cameraActualsCmp->replayFrameNum = g_replayFrameNum.getInt();
-    cameraActualsCmp->replayFrameNumEnd = g_replayFrameNumEnd.getInt();
-    cameraActualsCmp->currentCarIdx = g_camCarIdx.getInt();
-    if (cameraActualsCmp->currentCarIdx != lastCam)
-    {
-        tSinceCamChange = 0;
-        lastCam = cameraActualsCmp->currentCarIdx;
+        CameraActualsComponentSP cameraActualsCmp = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
+        cameraActualsCmp->timeSinceLastChange = tSinceCamChange;
+        cameraActualsCmp->replayFrameNum = g_replayFrameNum.getInt();
+        cameraActualsCmp->replayFrameNumEnd = g_replayFrameNumEnd.getInt();
+        cameraActualsCmp->currentCarIdx = g_camCarIdx.getInt();
+        if (cameraActualsCmp->currentCarIdx != lastCam)
+        {
+            tSinceCamChange = 0;
+            lastCam = cameraActualsCmp->currentCarIdx;
+        }
     }
 
     // your normal process loop would go here

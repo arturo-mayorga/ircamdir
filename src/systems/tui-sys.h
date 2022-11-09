@@ -5,6 +5,14 @@
 #include "../ecs.h"
 #include "ftxui/component/loop.hpp"
 
+struct CarEventTableEntry
+{
+    std::string driverName;
+    std::string eventNote;
+    int frameNumber;
+};
+typedef std::shared_ptr<CarEventTableEntry> CarEventTableEntrySP;
+
 struct TvDriverTableEntry
 {
     std::string name;
@@ -20,6 +28,8 @@ typedef std::shared_ptr<TvDriverTableEntry> TvDriverTableEntrySP;
 struct DisplayableModel
 {
     std::vector<TvDriverTableEntrySP> tvDriverTableEntries;
+    std::vector<CarEventTableEntrySP> overtakeLog;
+
     std::string currentFrameInfo;
     std::string sessionNameStr;
 

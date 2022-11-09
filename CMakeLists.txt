@@ -48,6 +48,7 @@ add_executable(
     src/irsdk/irsdk_utils.cpp
     src/irsdk/yaml_parser.cpp
     src/systems/irtelemetry-sys.cpp
+    src/systems/overtake-detector-system.cpp
     src/systems/closest-battle-director-sys.cpp
     src/systems/broadcast-car-info-collector-sys.cpp 
     src/systems/tui-sys.cpp

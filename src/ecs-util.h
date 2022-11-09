@@ -3,6 +3,27 @@
 
 #include "ecs.h"
 
+#define ECS_MINIMAL_SYSTEM(systemName)                                        \
+    class systemName : public ECS::EntitySystem                               \
+    {                                                                         \
+    public:                                                                   \
+        virtual ~##systemName();                                              \
+                                                                              \
+        virtual void configure(class ECS::World *world) override;             \
+                                                                              \
+        virtual void unconfigure(class ECS::World *world) override;           \
+                                                                              \
+        virtual void tick(class ECS::World *world, float deltaTime) override; \
+    };
+
+// To create a stub implementation of a minimal system
+// you can use the following code snippet
+// ---------------------------------------------------
+// ##systemName::~##systemName() {}
+// void ##systemName::configure(class ECS::World *world) {}
+// void ##systemName::unconfigure(class ECS::World *world) {}
+// void ##systemName::tick(class ECS::World *world, float deltaTime) {}
+
 namespace ECSUtil
 {
     template <typename CompType>

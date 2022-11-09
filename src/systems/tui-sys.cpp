@@ -7,6 +7,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <map>
 
 #include <ftxui/component/event.hpp>
 #include <ftxui/dom/elements.hpp>
@@ -16,6 +17,169 @@
 #include "ftxui/component/captured_mouse.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
+
+ftxui::Component EventLogTable(std::vector<CarEventTableEntrySP> &overtakeLog, std::function<void()> on_click)
+{
+    using namespace ftxui;
+
+    class Impl : public ComponentBase
+    {
+    public:
+        Impl(std::vector<CarEventTableEntrySP> *overtakeLog,
+             std::function<void()> on_click)
+            : overtakeLog_(overtakeLog),
+              on_click_(std::move(on_click)) {}
+
+        // Component implementation:
+        Element Render() override
+        {
+            ftxui::Elements nameElements({
+                text("Name"),
+            });
+            ftxui::Elements noteElements({
+                text("Notes"),
+            });
+            ftxui::Elements spacer1({text("  ")});
+            ftxui::Elements spacer2({text("  ")});
+            ftxui::Elements franeNumElements({text("Frame Num")});
+
+            for (auto it = overtakeLog_->rbegin(); it != overtakeLog_->rend(); ++it)
+            {
+                auto ev = *it;
+                auto color1 = Color::Green;
+                auto color2 = Color::DarkGreen;
+
+                nameElements.push_back(color(color1, text(ev->driverName)));
+                noteElements.push_back(color(color1, text(ev->eventNote)));
+                // spacer1.push_back(text("  "));
+
+                std::stringstream sout;
+                sout << ev->frameNumber;
+                franeNumElements.push_back(color(color1, text(sout.str())));
+            }
+
+            ftxui::Elements e({
+                hbox({
+                    vbox(franeNumElements),
+                    vbox(spacer1),
+                    vbox(nameElements),
+                    vbox(spacer2),
+                    vbox(noteElements) | flex,
+
+                }) | vscroll_indicator |
+                    border,
+            });
+            auto r = vbox(e);
+
+            return r | reflect(box_);
+        }
+
+        Decorator AnimatedColorStyle()
+        {
+            Decorator style = nothing;
+            if (option_->animated_colors.background.enabled)
+            {
+                style = style | bgcolor(Color::Interpolate(
+                                    animation_foreground_, //
+                                    option_->animated_colors.background.inactive,
+                                    option_->animated_colors.background.active));
+            }
+            if (option_->animated_colors.foreground.enabled)
+            {
+                style = style | color(Color::Interpolate(
+                                    animation_foreground_, //
+                                    option_->animated_colors.foreground.inactive,
+                                    option_->animated_colors.foreground.active));
+            }
+            return style;
+        }
+
+        void SetAnimationTarget(float target)
+        {
+            if (option_->animated_colors.foreground.enabled)
+            {
+                animator_foreground_ =
+                    animation::Animator(&animation_foreground_, target,
+                                        option_->animated_colors.foreground.duration,
+                                        option_->animated_colors.foreground.function);
+            }
+            if (option_->animated_colors.background.enabled)
+            {
+                animator_background_ =
+                    animation::Animator(&animation_background_, target,
+                                        option_->animated_colors.background.duration,
+                                        option_->animated_colors.background.function);
+            }
+        }
+
+        void OnAnimation(animation::Params &p) override
+        {
+            animator_background_.OnAnimation(p);
+            animator_foreground_.OnAnimation(p);
+        }
+
+        void OnClick()
+        {
+            on_click_();
+            animation_background_ = 0.5F; // NOLINT
+            animation_foreground_ = 0.5F; // NOLINT
+            SetAnimationTarget(1.F);      // NOLINT
+        }
+
+        bool OnEvent(Event event) override
+        {
+            if (event.is_mouse())
+            {
+                return OnMouseEvent(event);
+            }
+
+            if (event == Event::Return)
+            {
+                OnClick();
+                return true;
+            }
+            return false;
+        }
+
+        bool OnMouseEvent(Event event)
+        {
+            mouse_hover_ =
+                box_.Contain(event.mouse().x, event.mouse().y) && CaptureMouse(event);
+
+            if (!mouse_hover_)
+            {
+                return false;
+            }
+
+            if (event.mouse().button == Mouse::Left &&
+                event.mouse().motion == Mouse::Pressed)
+            {
+                TakeFocus();
+                OnClick();
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Focusable() const final { return true; }
+
+    private:
+        std::vector<CarEventTableEntrySP> *overtakeLog_;
+        std::function<void()> on_click_;
+        bool mouse_hover_ = false;
+        Box box_;
+        Ref<ButtonOption> option_;
+        float animation_background_ = 0;
+        float animation_foreground_ = 0;
+        animation::Animator animator_background_ =
+            animation::Animator(&animation_background_);
+        animation::Animator animator_foreground_ =
+            animation::Animator(&animation_foreground_);
+    };
+
+    return Make<Impl>(&overtakeLog, std::move(on_click));
+}
 
 ftxui::Component TvDriverTable(std::vector<TvDriverTableEntrySP> &cars)
 {
@@ -64,6 +228,59 @@ ftxui::Component TvDriverTable(std::vector<TvDriverTableEntrySP> &cars)
         auto r = vbox(e);
 
         return r; });
+}
+
+std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world)
+{
+    std::vector<CarEventTableEntrySP> ret;
+    std::map<int, std::string> idx2name;
+    std::map<int, float> idx2num;
+
+    world->each<StaticCarStateComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<StaticCarStateComponentSP> cStateH)
+        {
+            StaticCarStateComponentSP cState = cStateH.get();
+            idx2name[cState->idx] = cState->name;
+        });
+
+    world->each<DynamicCarStateComponentSP>(
+        [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
+        {
+            DynamicCarStateComponentSP cState = cStateH.get();
+            idx2num[cState->idx] = cState->currentLap * 100 + cState->lapDistPct;
+        });
+
+    auto overtakeSummaryComponent = ECSUtil::getFirstCmp<OvertakeSummaryComponentSP>(world);
+
+    for (auto ev : overtakeSummaryComponent->events)
+    {
+        CarEventTableEntrySP entry(new CarEventTableEntry());
+        entry->frameNumber = ev->frameNumber;
+        if (idx2name.count(ev->carIdx))
+        {
+            entry->driverName = idx2name[ev->carIdx];
+        }
+        else
+        {
+            entry->driverName = "bad name";
+        }
+
+        if (idx2name.count(ev->secCarIdx))
+        {
+            std::stringstream sout;
+            sout << " overtakes -> " << idx2name[ev->secCarIdx];
+            // sout << "  " << std::fixed << std::setprecision(8) << idx2num[ev->carIdx];
+            entry->eventNote = sout.str();
+        }
+        else
+        {
+            entry->eventNote = "???";
+        }
+
+        ret.push_back(entry);
+    }
+
+    return ret;
 }
 
 std::vector<TvDriverTableEntrySP> getTvDriverEntries(class ECS::World *world)
@@ -177,17 +394,35 @@ void TuiSystem::configure(class ECS::World *world)
         "Exiting Cam",
     };
 
+    static int tab_selected;
+    static std::vector<std::string> tab_values{
+        "Screen Time",
+        "Overtake Log",
+        //"tab_3",
+    };
+
     auto appModeLabel = Renderer([]
                                  { 
                                     screen.PostEvent(Event::Custom); // post an event to make sure the ui responds to live data updates
                                     return text("App Mode:"); });
 
     static auto layout = Container::Vertical(
-        {SimpleLabel(_dispModel.currentFrameInfo),
-         Container::Horizontal({appModeLabel,
-                                Dropdown(&_dispModel.appModeEntries, &_dispModel.appMode)}),
-         SimpleLabel(_dispModel.sessionNameStr),
-         TvDriverTable(_dispModel.tvDriverTableEntries)});
+        {
+            SimpleLabel(_dispModel.currentFrameInfo),
+            Container::Horizontal({appModeLabel,
+                                   Dropdown(&_dispModel.appModeEntries, &_dispModel.appMode)}),
+            SimpleLabel(_dispModel.sessionNameStr),
+            Renderer([]
+                     { return separator(); }),
+            Toggle(&tab_values, &tab_selected),
+            Container::Tab({
+                               TvDriverTable(_dispModel.tvDriverTableEntries),
+                               EventLogTable(_dispModel.overtakeLog, [&]
+                                             { tab_selected = 0; }),
+                           },
+                           &tab_selected),
+            //
+        });
 
     _ftuiLoop = new Loop(&screen, layout);
 }
@@ -208,6 +443,8 @@ void TuiSystem::tick(class ECS::World *world, float deltaTime)
     _dispModel.appMode = appStateComponent->mode;
 
     _dispModel.tvDriverTableEntries = getTvDriverEntries(world);
+
+    _dispModel.overtakeLog = getOvertakeEntries(world);
 
     {
         std::stringstream sout;
