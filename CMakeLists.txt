@@ -47,6 +47,9 @@ add_executable(
     src/irsdk/irsdk_diskclient.cpp
     src/irsdk/irsdk_utils.cpp
     src/irsdk/yaml_parser.cpp
+    src/txt-view/car-event-log-table.cpp
+    src/txt-view/tv-driver-table.cpp
+    src/txt-view/simple-label.cpp
     src/systems/irtelemetry-sys.cpp
     src/systems/overtake-detector-system.cpp
     src/systems/closest-battle-director-sys.cpp

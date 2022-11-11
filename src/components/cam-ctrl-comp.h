@@ -24,6 +24,15 @@ struct OnCameraChangeRequest
     int targetCarIdx;
 };
 
+struct OnFrameNumChangeRequest
+{
+    ECS_DECLARE_TYPE;
+
+    OnFrameNumChangeRequest(int _frameNum) : frameNum(_frameNum) {}
+
+    int frameNum;
+};
+
 struct CameraActualsComponent
 {
     ECS_DECLARE_TYPE;

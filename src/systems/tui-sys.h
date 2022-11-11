@@ -4,26 +4,8 @@
 #include <vector>
 #include "../ecs.h"
 #include "ftxui/component/loop.hpp"
-
-struct CarEventTableEntry
-{
-    std::string driverName;
-    std::string eventNote;
-    int frameNumber;
-};
-typedef std::shared_ptr<CarEventTableEntry> CarEventTableEntrySP;
-
-struct TvDriverTableEntry
-{
-    std::string name;
-    float targetBarVal;
-    std::string targetStrVal;
-    float actualBarVal;
-    std::string actualStrVal;
-    int isCarSelected;
-    int isCarStatic;
-};
-typedef std::shared_ptr<TvDriverTableEntry> TvDriverTableEntrySP;
+#include "../txt-view/car-event-log-table.h"
+#include "../txt-view/tv-driver-table.h"
 
 struct DisplayableModel
 {
@@ -35,6 +17,8 @@ struct DisplayableModel
 
     int appMode;
     std::vector<std::string> appModeEntries;
+
+    ECS::World *world;
 };
 
 class TuiSystem : public ECS::EntitySystem
@@ -44,6 +28,8 @@ private:
     int _isFinished = 0;
 
     DisplayableModel _dispModel;
+
+    void _onOvertakeLogClicked(int frameNum, int carIdx);
 
 public:
     virtual ~TuiSystem();

@@ -17,6 +17,7 @@ void OvertakeDetectorSystem::tick(class ECS::World *world, float deltaTime)
     std::vector<DynamicCarStateComponentSP> states;
 
     static std::map<int, int> carIdx2rtPos;
+    static int maxEventFrame = 0;
 
     world->each<DynamicCarStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
@@ -68,12 +69,13 @@ void OvertakeDetectorSystem::tick(class ECS::World *world, float deltaTime)
         ++i;
     }
 
-    if (newEvents.size() == 1 && secCar >= 0)
+    if (newEvents.size() == 1 && secCar >= 0 && newEvents[0]->frameNumber > maxEventFrame)
     {
         // the only likely reason you'd have more than one event per frame
         // is if someone towed... just ignore that.
         auto ev = newEvents[0];
         ev->secCarIdx = secCar;
         overtakeSummaryComponent->events.push_back(ev);
+        maxEventFrame = ev->frameNumber;
     }
 }

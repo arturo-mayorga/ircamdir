@@ -238,11 +238,18 @@ IrTelemetrySystem::~IrTelemetrySystem()
 void IrTelemetrySystem::configure(class ECS::World *world)
 {
     world->subscribe<OnCameraChangeRequest>(this);
+    world->subscribe<OnFrameNumChangeRequest>(this);
 }
 
 void IrTelemetrySystem::unconfigure(class ECS::World *world)
 {
     world->unsubscribeAll(this);
+}
+
+void IrTelemetrySystem::receive(ECS::World *world, const OnFrameNumChangeRequest &event)
+{
+    irsdk_broadcastMsg(irskd_BroadcastReplaySetPlayPosition, irsdk_RpyPos_Begin, event.frameNum);
+    irsdk_broadcastMsg(irsdk_BroadcastReplaySetPlaySpeed, 1, false, 0);
 }
 
 void IrTelemetrySystem::receive(ECS::World *world, const OnCameraChangeRequest &event)
