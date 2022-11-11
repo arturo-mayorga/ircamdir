@@ -9,6 +9,7 @@ struct CarEventTableEntry
     std::string eventNote;
     int frameNumber;
     int carIdx;
+    int seen;
 };
 typedef std::shared_ptr<CarEventTableEntry> CarEventTableEntrySP;
 

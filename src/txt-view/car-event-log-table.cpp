@@ -38,7 +38,16 @@ ftxui::Component CarEventLogTable(std::vector<CarEventTableEntrySP> &overtakeLog
             {
                 auto ev = *it;
                 auto color1 = Color::Green;
-                auto color2 = Color::DarkGreen;
+
+                if (ev->seen)
+                {
+                    color1 = Color::GrayDark;
+                }
+
+                if (rowIdx == hoverRow_)
+                {
+                    color1 = Color::GrayLight;
+                }
 
                 logRow2CarIdx_[rowIdx] = ev->carIdx;
                 logRow2CFrameNum_[rowIdx] = ev->frameNumber;
@@ -153,6 +162,8 @@ ftxui::Component CarEventLogTable(std::vector<CarEventTableEntrySP> &overtakeLog
                 return false;
             }
 
+            hoverRow_ = event.mouse().y - box_.y_min - 2;
+
             if (event.mouse().button == Mouse::Left &&
                 event.mouse().motion == Mouse::Pressed)
             {
@@ -173,6 +184,7 @@ ftxui::Component CarEventLogTable(std::vector<CarEventTableEntrySP> &overtakeLog
         std::map<int, int> logRow2CFrameNum_;
         bool mouse_hover_ = false;
         Box box_;
+        int hoverRow_ = -1;
         Ref<ButtonOption> option_;
         float animation_background_ = 0;
         float animation_foreground_ = 0;

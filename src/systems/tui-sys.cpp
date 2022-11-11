@@ -16,7 +16,7 @@
 #include <memory>
 #include <string>
 
-std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world)
+std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world, std::set<int> &senOvertakes)
 {
     std::vector<CarEventTableEntrySP> ret;
     std::map<int, std::string> idx2name;
@@ -37,6 +37,7 @@ std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world)
         });
 
     auto overtakeSummaryComponent = ECSUtil::getFirstCmp<OvertakeSummaryComponentSP>(world);
+    auto cameraActualsComponent = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
 
     for (auto ev : overtakeSummaryComponent->events)
     {
@@ -56,13 +57,23 @@ std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world)
         {
             std::stringstream sout;
             sout << " overtakes -> " << idx2name[ev->secCarIdx];
-            // sout << "  " << std::fixed << std::setprecision(8) << idx2num[ev->carIdx];
             entry->eventNote = sout.str();
         }
         else
         {
             entry->eventNote = "???";
         }
+
+        // sometimes we don't get the ext frame but if we get within the following
+        // number of frames and we are looking at the correct car we'll make it count
+        const int SEEN_FRAME_BUCKET_SIZE = 10;
+
+        if (cameraActualsComponent->replayFrameNum / SEEN_FRAME_BUCKET_SIZE == entry->frameNumber / SEEN_FRAME_BUCKET_SIZE && ev->carIdx == cameraActualsComponent->currentCarIdx)
+        {
+            senOvertakes.insert(entry->frameNumber / SEEN_FRAME_BUCKET_SIZE);
+        }
+
+        entry->seen = (senOvertakes.count(entry->frameNumber / SEEN_FRAME_BUCKET_SIZE) != 0);
 
         ret.push_back(entry);
     }
@@ -233,7 +244,7 @@ void TuiSystem::tick(class ECS::World *world, float deltaTime)
 
     _dispModel.tvDriverTableEntries = getTvDriverEntries(world);
 
-    _dispModel.overtakeLog = getOvertakeEntries(world);
+    _dispModel.overtakeLog = getOvertakeEntries(world, _seenOvertakes);
 
     {
         std::stringstream sout;

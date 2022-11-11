@@ -2,6 +2,7 @@
 #define tui_sys_h_
 
 #include <vector>
+#include <set>
 #include "../ecs.h"
 #include "ftxui/component/loop.hpp"
 #include "../txt-view/car-event-log-table.h"
@@ -28,6 +29,8 @@ private:
     int _isFinished = 0;
 
     DisplayableModel _dispModel;
+
+    std::set<int> _seenOvertakes;
 
     void _onOvertakeLogClicked(int frameNum, int carIdx);
 
