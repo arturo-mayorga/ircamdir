@@ -6,6 +6,7 @@
 
 #include "systems/irtelemetry-sys.h"
 #include "systems/overtake-detector-system.h"
+#include "systems/incident-detector-system.h"
 #include "systems/closest-battle-director-sys.h"
 #include "systems/broadcast-car-info-collector-sys.h"
 #include "systems/tui-sys.h"
@@ -27,6 +28,7 @@ int main()
 
     world->registerSystem(new IrTelemetrySystem());
     world->registerSystem(new OvertakeDetectorSystem());
+    world->registerSystem(new IncidentDetectorSystem());
     world->registerSystem(new BroadcastCarInfoCollectorSystem());
     world->registerSystem(new BroadcastSummarySystem());
     world->registerSystem(new TvPointDirectorSystem());
@@ -41,9 +43,7 @@ int main()
     ent->assign<ApplicationStateComponentSP>(new ApplicationStateComponent());
     ent->assign<SessionComponentSP>(new SessionComponent());
     ent->assign<OvertakeSummaryComponentSP>(new OvertakeSummaryComponent());
-
-    // std::cout << "Application Start" << std::endl
-    //           << "==========================" << std::endl;
+    ent->assign<DetectedIncidentSummaryComponentSP>(new DetectedIncidentSummaryComponent());
 
     auto tPrev = GetTickCount();
 

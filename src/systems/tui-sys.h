@@ -12,6 +12,7 @@ struct DisplayableModel
 {
     std::vector<TvDriverTableEntrySP> tvDriverTableEntries;
     std::vector<CarEventTableEntrySP> overtakeLog;
+    std::vector<CarEventTableEntrySP> detectedIncidentLog;
 
     std::string currentFrameInfo;
     std::string sessionNameStr;
@@ -31,8 +32,9 @@ private:
     DisplayableModel _dispModel;
 
     std::set<int> _seenOvertakes;
+    std::set<int> _seenDetectedIncidents;
 
-    void _onOvertakeLogClicked(int frameNum, int carIdx);
+    void _onEventLogClicked(int frameNum, int carIdx);
 
 public:
     virtual ~TuiSystem();

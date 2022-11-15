@@ -248,8 +248,11 @@ void IrTelemetrySystem::unconfigure(class ECS::World *world)
 
 void IrTelemetrySystem::receive(ECS::World *world, const OnFrameNumChangeRequest &event)
 {
+    // irsdk_broadcastMsg(irsdk_BroadcastReplaySearch, irsdk_RpySrch_ToStart, 0);
     irsdk_broadcastMsg(irskd_BroadcastReplaySetPlayPosition, irsdk_RpyPos_Begin, event.frameNum);
+    Sleep(100);
     irsdk_broadcastMsg(irsdk_BroadcastReplaySetPlaySpeed, 1, false, 0);
+    Sleep(100);
 }
 
 void IrTelemetrySystem::receive(ECS::World *world, const OnCameraChangeRequest &event)
@@ -288,6 +291,7 @@ void IrTelemetrySystem::receive(ECS::World *world, const OnCameraChangeRequest &
     }
 
     irsdk_broadcastMsg(irsdk_BroadcastCamSwitchNum, requestedCarNum, camGroup, 0);
+    Sleep(100);
 }
 
 void IrTelemetrySystem::tick(class ECS::World *world, float deltaTime)

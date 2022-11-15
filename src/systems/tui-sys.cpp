@@ -16,25 +16,73 @@
 #include <memory>
 #include <string>
 
-std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world, std::set<int> &senOvertakes)
+std::map<int, std::string> getIdx2nameMap(class ECS::World *world)
 {
-    std::vector<CarEventTableEntrySP> ret;
     std::map<int, std::string> idx2name;
-    std::map<int, float> idx2num;
-
     world->each<StaticCarStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<StaticCarStateComponentSP> cStateH)
         {
             StaticCarStateComponentSP cState = cStateH.get();
             idx2name[cState->idx] = cState->name;
         });
+    return idx2name;
+}
 
+std::map<int, float> getIdx2numMap(class ECS::World *world)
+{
+    std::map<int, float> idx2num;
     world->each<DynamicCarStateComponentSP>(
         [&](ECS::Entity *ent, ECS::ComponentHandle<DynamicCarStateComponentSP> cStateH)
         {
             DynamicCarStateComponentSP cState = cStateH.get();
             idx2num[cState->idx] = cState->currentLap * 100 + cState->lapDistPct;
         });
+    return idx2num;
+}
+
+std::vector<CarEventTableEntrySP> getDetectedIncidetEntries(class ECS::World *world, std::set<int> &senDetectedIncidents, const std::map<int, std::string> &idx2name, const std::map<int, float> &idx2num)
+{
+    std::vector<CarEventTableEntrySP> ret;
+
+    auto detectedIncidentSummaryComponent = ECSUtil::getFirstCmp<DetectedIncidentSummaryComponentSP>(world);
+    auto cameraActualsComponent = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
+
+    for (auto ev : detectedIncidentSummaryComponent->events)
+    {
+        CarEventTableEntrySP entry(new CarEventTableEntry());
+        entry->carIdx = ev->carIdx;
+        entry->frameNumber = ev->frameNumber;
+        if (idx2name.count(ev->carIdx))
+        {
+            entry->driverName = idx2name.find(ev->carIdx)->second;
+        }
+        else
+        {
+            entry->driverName = "bad name";
+        }
+
+        entry->eventNote = "Possible Incident";
+
+        // sometimes we don't get the ext frame but if we get within the following
+        // number of frames and we are looking at the correct car we'll make it count
+        const int SEEN_FRAME_BUCKET_SIZE = 10;
+
+        if (cameraActualsComponent->replayFrameNum / SEEN_FRAME_BUCKET_SIZE == entry->frameNumber / SEEN_FRAME_BUCKET_SIZE && ev->carIdx == cameraActualsComponent->currentCarIdx)
+        {
+            senDetectedIncidents.insert(entry->frameNumber / SEEN_FRAME_BUCKET_SIZE);
+        }
+
+        entry->seen = (senDetectedIncidents.count(entry->frameNumber / SEEN_FRAME_BUCKET_SIZE) != 0);
+
+        ret.push_back(entry);
+    }
+
+    return ret;
+}
+
+std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world, std::set<int> &senOvertakes, const std::map<int, std::string> &idx2name, const std::map<int, float> &idx2num)
+{
+    std::vector<CarEventTableEntrySP> ret;
 
     auto overtakeSummaryComponent = ECSUtil::getFirstCmp<OvertakeSummaryComponentSP>(world);
     auto cameraActualsComponent = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
@@ -46,7 +94,7 @@ std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world, st
         entry->frameNumber = ev->frameNumber;
         if (idx2name.count(ev->carIdx))
         {
-            entry->driverName = idx2name[ev->carIdx];
+            entry->driverName = idx2name.find(ev->carIdx)->second;
         }
         else
         {
@@ -56,7 +104,7 @@ std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world, st
         if (idx2name.count(ev->secCarIdx))
         {
             std::stringstream sout;
-            sout << " overtakes -> " << idx2name[ev->secCarIdx];
+            sout << " overtakes -> " << idx2name.find(ev->secCarIdx)->second;
             entry->eventNote = sout.str();
         }
         else
@@ -190,6 +238,7 @@ void TuiSystem::configure(class ECS::World *world)
     static std::vector<std::string> tab_values{
         "Screen Time",
         "Overtake Log",
+        "Incident Log"
         //"tab_3",
     };
 
@@ -210,7 +259,10 @@ void TuiSystem::configure(class ECS::World *world)
             Container::Tab({
                                TvDriverTable(_dispModel.tvDriverTableEntries),
                                CarEventLogTable(_dispModel.overtakeLog, [&](int frameNum, int carIdx) { // tab_selected = 0;
-                                   _onOvertakeLogClicked(frameNum, carIdx);
+                                   _onEventLogClicked(frameNum, carIdx);
+                               }),
+                               CarEventLogTable(_dispModel.detectedIncidentLog, [&](int frameNum, int carIdx) { // tab_selected = 0;
+                                   _onEventLogClicked(frameNum, carIdx);
                                }),
                            },
                            &tab_selected),
@@ -220,7 +272,7 @@ void TuiSystem::configure(class ECS::World *world)
     _ftuiLoop = new Loop(&screen, layout);
 }
 
-void TuiSystem::_onOvertakeLogClicked(int frameNum, int carIdx)
+void TuiSystem::_onEventLogClicked(int frameNum, int carIdx)
 {
     _dispModel.world->emit<OnCameraChangeRequest>(OnCameraChangeRequest(carIdx));
     _dispModel.world->emit<OnFrameNumChangeRequest>(OnFrameNumChangeRequest(frameNum - 5 * 60));
@@ -239,12 +291,16 @@ void TuiSystem::tick(class ECS::World *world, float deltaTime)
     SessionComponentSP sessionComponent = ECSUtil::getFirstCmp<SessionComponentSP>(world);
     CameraActualsComponentSP cameraActualsComponent = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
 
+    std::map<int, std::string> idx2name = getIdx2nameMap(world);
+    std::map<int, float> idx2num = getIdx2numMap(world);
+
     _dispModel.world = world;
     _dispModel.appMode = appStateComponent->mode;
 
     _dispModel.tvDriverTableEntries = getTvDriverEntries(world);
 
-    _dispModel.overtakeLog = getOvertakeEntries(world, _seenOvertakes);
+    _dispModel.overtakeLog = getOvertakeEntries(world, _seenOvertakes, idx2name, idx2num);
+    _dispModel.detectedIncidentLog = getDetectedIncidetEntries(world, _seenDetectedIncidents, idx2name, idx2num);
 
     {
         std::stringstream sout;

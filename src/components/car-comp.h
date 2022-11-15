@@ -90,4 +90,13 @@ struct OvertakeSummaryComponent
 ECS_DEFINE_TYPE(OvertakeSummaryComponent);
 typedef std::shared_ptr<OvertakeSummaryComponent> OvertakeSummaryComponentSP;
 
+struct DetectedIncidentSummaryComponent
+{
+    ECS_DECLARE_TYPE;
+
+    std::vector<CarEventSP> events;
+};
+ECS_DEFINE_TYPE(DetectedIncidentSummaryComponent);
+typedef std::shared_ptr<DetectedIncidentSummaryComponent> DetectedIncidentSummaryComponentSP;
+
 #endif
