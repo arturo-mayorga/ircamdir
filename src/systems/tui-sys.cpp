@@ -92,6 +92,8 @@ std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world, st
         CarEventTableEntrySP entry(new CarEventTableEntry());
         entry->carIdx = ev->carIdx;
         entry->frameNumber = ev->frameNumber;
+        entry->lap = ev->lapNumber;
+
         if (idx2name.count(ev->carIdx))
         {
             entry->driverName = idx2name.find(ev->carIdx)->second;
@@ -229,9 +231,10 @@ void TuiSystem::configure(class ECS::World *world)
         "Closest Battle",
         "TV Point Fill",
         "Passive",
-        "Incident Cam",
-        "Leader Cam",
-        "Exiting Cam",
+        "Highlights"
+        // "Incident Cam",
+        // "Leader Cam",
+        // "Exiting Cam"
     };
 
     static int tab_selected;

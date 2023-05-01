@@ -10,6 +10,7 @@ struct CarEventTableEntry
     int frameNumber;
     int carIdx;
     int seen;
+    int lap;
 };
 typedef std::shared_ptr<CarEventTableEntry> CarEventTableEntrySP;
 

@@ -62,19 +62,15 @@ ftxui::Component CarEventLogTable(std::vector<CarEventTableEntrySP> &overtakeLog
                 franeNumElements.push_back(color(color1, text(sout.str())));
             }
 
-            ftxui::Elements e({
-                hbox({
-                    vbox(franeNumElements),
-                    vbox(spacer1),
-                    vbox(nameElements),
-                    vbox(spacer2),
-                    vbox(noteElements) | flex,
+            ftxui::Elements e({hbox({
+                vbox(franeNumElements),
+                vbox(spacer1),
+                vbox(nameElements),
+                vbox(spacer2),
+                vbox(noteElements) | flex,
+            })});
 
-                }) | vscroll_indicator |
-                    border,
-            });
-            auto r = vbox(e);
-
+            auto r = vbox(e) /*| vscroll_indicator */ | frame | border; // | size(HEIGHT, LESS_THAN, 10);
             return r | reflect(box_);
         }
 

@@ -13,6 +13,8 @@ public:
     virtual void unconfigure(class ECS::World *world) override;
 
     virtual void tick(class ECS::World *world, float deltaTime) override;
+
+    void tickHighlight(class ECS::World *world, float deltaTime, bool startThisFrame);
 };
 
 #endif

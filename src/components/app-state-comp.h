@@ -8,6 +8,7 @@ enum AppMode
     CLOSEST_BATTLE,
     TV_POINT_FILL,
     PASSIVE,
+    HIGHLIGHT_REP,
     INCIDENT_CAM,
     LEADER_CAM,
     EXITING_CAM,

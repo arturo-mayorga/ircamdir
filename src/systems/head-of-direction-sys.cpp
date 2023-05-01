@@ -1,6 +1,9 @@
+#include "../ecs-util.h"
+
 #include "head-of-direction-sys.h"
 #include "../components/cam-ctrl-comp.h"
 #include "../components/app-state-comp.h"
+#include "../components/car-comp.h"
 
 HeadOfDirectionSystem::~HeadOfDirectionSystem() {}
 
@@ -43,6 +46,7 @@ void HeadOfDirectionSystem::tick(class ECS::World *world, float deltaTime)
                 if ((aState->timeSinceLastChange > 10000 || prevAppMode != currentAppMode) && currentAppMode != AppMode::PASSIVE)
                 {
                     int targetCarIdx;
+                    auto emitCameraRequest = true;
                     switch (currentAppMode)
                     {
                     case AppMode::CLOSEST_BATTLE:
@@ -60,9 +64,16 @@ void HeadOfDirectionSystem::tick(class ECS::World *world, float deltaTime)
                     case AppMode::LEADER_CAM:
                         targetCarIdx = SpecialCarNum::LEADER;
                         break;
+                    case AppMode::HIGHLIGHT_REP:
+                        tickHighlight(world, deltaTime, prevAppMode != AppMode::HIGHLIGHT_REP);
+                        emitCameraRequest = false;
+                        break;
                     }
 
-                    world->emit<OnCameraChangeRequest>(OnCameraChangeRequest(targetCarIdx));
+                    if (emitCameraRequest)
+                    {
+                        world->emit<OnCameraChangeRequest>(OnCameraChangeRequest(targetCarIdx));
+                    }
                 }
             }
         });
@@ -70,4 +81,73 @@ void HeadOfDirectionSystem::tick(class ECS::World *world, float deltaTime)
     prevAppMode = currentAppMode;
 
     appModeTime[currentAppMode] += deltaTime;
+}
+
+void HeadOfDirectionSystem::tickHighlight(class ECS::World *world, float deltaTime, bool startThisFrame)
+{
+    const int starting = 0;
+    const int transitioning = 1;
+    const int watching = 2;
+    const int triggerTransition = 3;
+
+    static int currentEntry = 0;
+    static int currentState = starting;
+
+    if (startThisFrame)
+    {
+        currentState = starting;
+        currentEntry = 0;
+    }
+
+    auto cameraActualsComponent = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
+    auto overtakeSummaryComponent = ECSUtil::getFirstCmp<OvertakeSummaryComponentSP>(world);
+
+    auto currentFrame = cameraActualsComponent->replayFrameNum;
+
+    if (overtakeSummaryComponent->events.size() <= currentEntry)
+    {
+        ApplicationStateComponentSP appStateComponent = ECSUtil::getFirstCmp<ApplicationStateComponentSP>(world);
+        appStateComponent->mode = AppMode::TV_POINT_FILL;
+        return;
+    }
+
+    auto targetEvent = overtakeSummaryComponent->events[currentEntry];
+
+    auto targetWindowStart = targetEvent->frameNumber - 5 * 60;
+    auto targetWindowEnd = targetEvent->frameNumber + 2 * 60;
+    auto carIdx = targetEvent->carIdx;
+
+    bool currentlyInWindow = currentFrame >= targetWindowStart && currentFrame <= targetWindowEnd;
+
+    auto secondsToWindow = (currentFrame - targetWindowEnd) / 60;
+
+    if (starting == currentState)
+    {
+        // go to target
+        world->emit<OnCameraChangeRequest>(OnCameraChangeRequest(carIdx));
+        world->emit<OnFrameNumChangeRequest>(OnFrameNumChangeRequest(targetWindowStart));
+
+        currentState = transitioning;
+    }
+    else if (transitioning == currentState)
+    {
+        if (currentlyInWindow)
+        {
+            currentState = watching;
+        }
+    }
+    else if (watching == currentState)
+    {
+        if (!currentlyInWindow)
+        {
+            currentState = triggerTransition;
+            ++currentEntry;
+        }
+    }
+    else if (triggerTransition == currentState)
+    {
+        world->emit<OnCameraChangeRequest>(OnCameraChangeRequest(carIdx));
+        world->emit<OnFrameNumChangeRequest>(OnFrameNumChangeRequest(targetWindowStart));
+        currentState = transitioning;
+    }
 }

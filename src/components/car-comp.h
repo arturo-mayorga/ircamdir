@@ -76,6 +76,7 @@ typedef std::shared_ptr<BroadcastCarSummaryComponent> BroadcastCarSummaryCompone
 struct CarEvent
 {
     int frameNumber;
+    int lapNumber;
     int carIdx;
     int secCarIdx;
 };
