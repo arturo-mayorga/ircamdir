@@ -77,6 +77,7 @@ struct CarEvent
 {
     int frameNumber;
     int lapNumber;
+    float lapDistPct;
     int carIdx;
     int secCarIdx;
 };

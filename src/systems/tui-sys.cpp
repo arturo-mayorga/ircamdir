@@ -80,6 +80,20 @@ std::vector<CarEventTableEntrySP> getDetectedIncidetEntries(class ECS::World *wo
     return ret;
 }
 
+extern std::string getEpochKey(CarEventSP event);
+// {
+//     const int frameBucketSize = 90 * 60;
+//     const int pctDistBucketSize = 10;
+
+//     int frameBucket = event->frameNumber / frameBucketSize;
+//     int pctBucket = (100 * event->lapDistPct) / pctDistBucketSize;
+
+//     std::stringstream sout;
+//     sout << frameBucket << ":" << pctBucket;
+
+//     return sout.str();
+// }
+
 std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world, std::set<int> &senOvertakes, const std::map<int, std::string> &idx2name, const std::map<int, float> &idx2num)
 {
     std::vector<CarEventTableEntrySP> ret;
@@ -106,7 +120,7 @@ std::vector<CarEventTableEntrySP> getOvertakeEntries(class ECS::World *world, st
         if (idx2name.count(ev->secCarIdx))
         {
             std::stringstream sout;
-            sout << " overtakes -> " << idx2name.find(ev->secCarIdx)->second;
+            sout << getEpochKey(ev) << " overtakes -> " << idx2name.find(ev->secCarIdx)->second;
             entry->eventNote = sout.str();
         }
         else

@@ -56,6 +56,7 @@ void OvertakeDetectorSystem::tick(class ECS::World *world, float deltaTime)
             ev->carIdx = c->idx;
             ev->frameNumber = cameraActualsComponent->replayFrameNum;
             ev->lapNumber = c->currentLap;
+            ev->lapDistPct = c->lapDistPct;
 
             newEvents.push_back(ev);
         }

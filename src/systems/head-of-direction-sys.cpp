@@ -5,6 +5,10 @@
 #include "../components/app-state-comp.h"
 #include "../components/car-comp.h"
 
+#include <set>
+#include <sstream>
+#include <iostream>
+
 HeadOfDirectionSystem::~HeadOfDirectionSystem() {}
 
 void HeadOfDirectionSystem::configure(class ECS::World *world) {}
@@ -83,6 +87,20 @@ void HeadOfDirectionSystem::tick(class ECS::World *world, float deltaTime)
     appModeTime[currentAppMode] += deltaTime;
 }
 
+std::string getEpochKey(CarEventSP event)
+{
+    const int frameBucketSize = 10 * 60;
+    const int pctDistBucketSize = 50;
+
+    int frameBucket = event->frameNumber / frameBucketSize;
+    int pctBucket = (int)((100 * event->lapDistPct) / pctDistBucketSize);
+
+    std::stringstream sout;
+    sout << frameBucket << "|" << pctBucket;
+
+    return sout.str();
+}
+
 void HeadOfDirectionSystem::tickHighlight(class ECS::World *world, float deltaTime, bool startThisFrame)
 {
     const int starting = 0;
@@ -93,10 +111,16 @@ void HeadOfDirectionSystem::tickHighlight(class ECS::World *world, float deltaTi
     static int currentEntry = 0;
     static int currentState = starting;
 
+    // sometimes the camera points in the same general direction for
+    // different overtake events.  Keep track of what we've seen.
+    static std::set<std::string> seenEpochs;
+
     if (startThisFrame)
     {
         currentState = starting;
         currentEntry = 0;
+
+        seenEpochs.clear();
     }
 
     auto cameraActualsComponent = ECSUtil::getFirstCmp<CameraActualsComponentSP>(world);
@@ -127,6 +151,8 @@ void HeadOfDirectionSystem::tickHighlight(class ECS::World *world, float deltaTi
         world->emit<OnCameraChangeRequest>(OnCameraChangeRequest(carIdx));
         world->emit<OnFrameNumChangeRequest>(OnFrameNumChangeRequest(targetWindowStart));
 
+        seenEpochs.insert(getEpochKey(targetEvent));
+
         currentState = transitioning;
     }
     else if (transitioning == currentState)
@@ -141,13 +167,21 @@ void HeadOfDirectionSystem::tickHighlight(class ECS::World *world, float deltaTi
         if (!currentlyInWindow)
         {
             currentState = triggerTransition;
+
             ++currentEntry;
+            while (overtakeSummaryComponent->events.size() > currentEntry &&
+                   seenEpochs.find(getEpochKey(overtakeSummaryComponent->events[currentEntry])) != seenEpochs.end())
+            {
+                ++currentEntry;
+            }
         }
     }
     else if (triggerTransition == currentState)
     {
         world->emit<OnCameraChangeRequest>(OnCameraChangeRequest(carIdx));
         world->emit<OnFrameNumChangeRequest>(OnFrameNumChangeRequest(targetWindowStart));
+
+        seenEpochs.insert(getEpochKey(targetEvent));
         currentState = transitioning;
     }
 }
